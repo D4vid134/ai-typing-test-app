@@ -1,0 +1,40 @@
+#typing-area {
+    min-height: 20px; // So it's visible even when empty
+    margin: 0px 20px;
+    padding: 20px;
+    line-height: 40px;
+
+    height: calc(100% - 100px);
+    font-size: 30px;
+    border: 2px solid #cacaca;
+
+    font-family: Lucida Console;
+    white-space: pre-wrap; // Preserves spaces and line breaks
+    cursor: text;
+    position: relative; // To position the hidden input correctly
+
+    span {
+        padding: 4px 1px;
+        &.correct {
+            background-color: #7FBAE7;
+        }
+
+        &.incorrect {
+            background-color: #ff6865;
+        }
+
+        &.current {
+            border-bottom: 2px solid black; // Customize as needed
+        }
+    }
+
+    .hidden-input {
+        position: absolute; // Position it over the typing area
+        opacity: 0; // Make it invisible
+        pointer-events: none; // Allows clicks to pass through to the div below
+        height: 100%;
+        width: 100%;
+        top: 0;
+        left: 0;
+    }
+}
