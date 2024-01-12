@@ -5,7 +5,8 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Login from './pages/Login/Login'
 import Signup from './pages/Signup/Signup'
-import Home from './pages/Home/Home'
+import Home from './pages/Custom/Custom'
+import Custom from './pages/Custom/Custom'
 
 
 function App() {
@@ -21,6 +22,12 @@ function App() {
               index
               element={
                 <Home />
+              }
+            />
+            <Route
+              path="custom"
+              element={
+                <Custom />
               }
             />
           </Route>

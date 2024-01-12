@@ -33,18 +33,15 @@ exports.generateAiText = functions.https.onRequest((req, res) => {
     const prompt = body.prompt;
     const wordCount = body.wordCount;
 
-    let content = "prompt: " + prompt + ", wordcount: " + wordCount;
-    if (body.focus) {
-      content += ", focus: " + body.focus;
+    let message = `You are a text generator for typing tests. The prompt is "${prompt}". 
+      The word count is ${wordCount}. Generate text that is similar to the prompt and is the given word count.`;
+
+    if (body.focus.length > 0) {
+      message += ` There are also some focus characters that you should try to include more. They are ${body.focus}.`;
     }
 
     const completion = await openai.chat.completions.create({
-      messages: [{"role": "system", "content": `You are a text generator for typing 
-      tests. You will be given a prompt and word count. You must generate text that is similar to the 
-      prompt and is the given word count. You may also be provided with a few characters to focus on. 
-      The specific format of the input is
-      "prompt: {prompt}, wordcount: {wordcount}, focus: {characters separated by spaces}.`},
-      {"role": "user", "content": content}],
+      messages: [{"role": "system", "content": message}],
       model: "gpt-3.5-turbo-1106",
     });
 
@@ -56,4 +53,12 @@ exports.generateAiText = functions.https.onRequest((req, res) => {
   });
 });
 
+// const generateTextBasedOnCategory = async (category) => {
+//   const completion = await openai.chat.completions.create({
+//     messages: [{"role": "system", "content": `You are generating text for a typing test. The category is
+//      ${category}. Generate a 150 word interesting thing to type about. Just the text in one big paragraph.`}],
+//     model: "gpt-3.5-turbo-1106",
+//   });
 
+//   return completion.choices[0].message.content;
+// };
