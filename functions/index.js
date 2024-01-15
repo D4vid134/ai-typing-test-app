@@ -17,7 +17,8 @@ dotenv.config();
 const OpenAI = require("openai");
 
 const openai = new OpenAI({apiKey: process.env.OPENAI_APIKEY});
-
+const admin = require("firebase-admin");
+admin.initializeApp();
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
 
@@ -29,7 +30,7 @@ const openai = new OpenAI({apiKey: process.env.OPENAI_APIKEY});
 exports.generateAiText = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
     console.time("Total Execution Time");
-    const body = JSON.parse(req.body);
+    const body = req.body;
     const prompt = body.prompt;
     const wordCount = body.wordCount;
 
@@ -49,6 +50,75 @@ exports.generateAiText = functions.https.onRequest((req, res) => {
 
     return res.status(200).send({
       text: completion.choices[0].message.content,
+    });
+  });
+});
+
+const fetchPassages = async (category, amount) => {
+  if (category === "All") {
+    let listOfCategories = ["fun facts", "science", "history", "mythology", "history", "sports", "science"];
+
+    let passages = [];
+
+    const categorySubjections = {};
+
+    // randomly select a category
+    for (let i = 0; i < amount; i++) {
+      category = listOfCategories[Math.floor(Math.random() * listOfCategories.length)];
+      let subsections = {};
+      // if the category has already been selected, then get the subsections from the map
+      if (categorySubjections[category]) {
+        subsections = categorySubjections[category];
+      } else {
+        const categoryDoc = await admin.firestore().collection("passages").doc(category).get();
+        subsections = categoryDoc.data().subsections;
+        categorySubjections[category] = subsections;
+      }
+
+      // randomly select a subsection from the subsections map
+      const subsectionKeys = Object.keys(subsections);
+      const subsection = subsectionKeys[Math.floor(Math.random() * subsectionKeys.length)];
+
+      const passage = subsections[subsection];
+      passages.push(passage);
+    }
+    return passages;
+  } else {
+    const categoryDoc = await admin.firestore().collection("passages").doc(category).get();
+    const subsections = categoryDoc.data().subsections;
+    let passages = [];
+    for (let i = 0; i < amount; i++) {
+      const subsectionKeys = Object.keys(subsections);
+      console.log(subsectionKeys);
+      const subsection = subsectionKeys[Math.floor(Math.random() * subsectionKeys.length)];
+      console.log(subsection);
+      const passage = subsections[subsection];
+      passages.push(passage);
+    }
+    return passages;
+  }
+};
+
+exports.fetchPassages = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    const body = req.body;
+    const category = body.category;
+    const amount = body.amount;
+
+    const passages = await fetchPassages(category, amount);
+
+    //convert passages into one long string with a space between each passage except the last one
+    let passageString = "";
+
+    for (let i = 0; i < passages.length; i++) {
+      passageString += passages[i];
+      if (i < passages.length - 1) {
+        passageString += " ";
+      }
+    }
+
+    return res.status(200).send({
+      text: passageString,
     });
   });
 });

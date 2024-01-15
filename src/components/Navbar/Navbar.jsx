@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./navbar.scss";
+import "./Navbar.scss";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { signOut } from "firebase/auth";
