@@ -1,10 +1,10 @@
 .main.home {
     width: 70%;
-    margin: 5% auto 20px;
+    margin: 6% auto 20px;
     background-color: white;
     border-radius: 10px;
     height: 80dvh;
-    max-height: 380px;
+    max-height: 330px;
 
     //make noticeable box shadow
     box-shadow: 0px 0px 6px rgba(148, 148, 148, 0.5);
@@ -51,6 +51,7 @@
             border: 2px solid #cacaca;
             margin: 0px 1.25rem; /* 20px / 16px */
             width: calc(100% - 2.5rem - 4px); /* 40px / 16px */
+            border-radius: 5px;
         }
     }
 

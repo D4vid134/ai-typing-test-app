@@ -8,11 +8,9 @@ import { auth } from "../../firebase";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos }) => {
-
+const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typedCount }) => {
     useEffect(() => {
         // console.log(currentUser);
-        console.log(timeElapsed);
     }, [timeElapsed]);
 
     const calculateWpm = () => {
@@ -31,6 +29,10 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos }) =
         } else if (notCorrectedTypos * 5 > correctCharacters) {
             wpm = Math.floor((correctCharacters - (notCorrectedTypos * 2)) / 5 / (timeElapsed / 60));
         }
+
+        if (wpm < 0) {
+            wpm = 0;
+        }
         return wpm;
     }
 
@@ -41,8 +43,8 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos }) =
     }
 
     const calculateAccuracy = () => {
-        //based on typos
-        const accuracy = Math.floor(((correctCharacters + notCorrectedTypos) - typos) / (correctCharacters + notCorrectedTypos) * 100);
+        //based on typos and typed
+        const accuracy = Math.floor((typedCount - typos) / typedCount * 100);
         return accuracy;
     }
 

@@ -21,7 +21,7 @@ const Home = () => {
     const [typingAreaKey, setTypingAreaKey] = useState(0);
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
-        queryKey: ['fetchPassages', { category: type, amount: minutes * 2 }],
+        queryKey: ['fetchPassages', { category: type, amount: minutes * 3 }],
         queryFn: async ({ queryKey }) => {
             // Extract the category and amount from the queryKey
             const [, { category, amount }] = queryKey;
@@ -45,13 +45,15 @@ const Home = () => {
         setTypingAreaKey(prevKey => prevKey + 1); // Update the key
     }
 
-    const showResults = (timeElapsed, correctCount, incorrectCount, typoCount) => {
+    const showResults = (timeElapsed, correctCount, incorrectCount, typoCount, typedCount) => {
         const results = {
             timeElapsed,
             correctCharacters: correctCount,
             typos: typoCount,
             notCorrectedTypos: incorrectCount,
+            typedCount: typedCount,
         };
+        console.log(results);
         refreshText();
         setResults(results);
     };
@@ -65,6 +67,7 @@ const Home = () => {
                     correctCharacters={results.results.correctCharacters}
                     typos={results.results.typos}
                     notCorrectedTypos={results.results.notCorrectedTypos}
+                    typedCount={results.results.typedCount}
                 />
             </div>
         );
@@ -82,24 +85,24 @@ const Home = () => {
                         maxWidth: '100%',
                     }}
                     >
-                    <FormControl fullWidth>
-                        <InputLabel>Category</InputLabel>
-                        <Select
-                        labelId="simple-select-label"
-                        defaultValue={"Science"}
-                        label="Category"
-                        size="small"
-                        value={type}
-                        onChange={(e) => setType(e.target.value)}
-                        >
-                        <MenuItem value={"All"}>All</MenuItem>
-                        <MenuItem value={"science"}>Science</MenuItem>
-                        <MenuItem value={"history"}>History</MenuItem>
-                        <MenuItem value={"sports"}>Sports</MenuItem>
-                        <MenuItem value={"fun facts"}>Fun Facts</MenuItem>
-                        <MenuItem value={"mythology"}>Mythology</MenuItem>
-                        </Select>
-                    </FormControl>
+                        <FormControl fullWidth>
+                            <InputLabel>Category</InputLabel>
+                            <Select
+                                labelId="simple-select-label"
+                                defaultValue={"Science"}
+                                label="Category"
+                                size="small"
+                                value={type}
+                                onChange={(e) => setType(e.target.value)}
+                            >
+                            <MenuItem value={"All"}>All</MenuItem>
+                            <MenuItem value={"science"}>Science</MenuItem>
+                            <MenuItem value={"history"}>History</MenuItem>
+                            <MenuItem value={"sports"}>Sports</MenuItem>
+                            <MenuItem value={"fun facts"}>Fun Facts</MenuItem>
+                            <MenuItem value={"mythology"}>Mythology</MenuItem>
+                            </Select>
+                        </FormControl>
                     </Box>
 
                     <Box
@@ -146,7 +149,7 @@ const Home = () => {
                     <TypingArea 
                         key={typingAreaKey} // Use the key here
                         text={data}
-                        seconds={minutes * 3}
+                        seconds={minutes * 60}
                         showResults={showResults}
                     />
                 ) : (

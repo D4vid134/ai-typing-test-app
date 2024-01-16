@@ -1,12 +1,79 @@
 import './TypingArea.scss'
 import { useRef, useState } from 'react';
 import { useEffect, memo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Virtuoso } from 'react-virtuoso';
+import { useMemo } from 'react';
 
 const Character = memo(({ char, status }) => {
     return <span className={status}>{char}</span>;
 });
 
 Character.displayName = 'Character';
+
+const TypingText = ({ text, userInput, isFocused }) => {
+    // Define the block size
+    const blockSize = 600; // Adjust based on your layout
+    // Function to find the nearest space
+    const findNearestSpace = (text, startIndex, endIndex) => {
+        for (let i = endIndex; i > startIndex; i--) {
+            if (text[i] === ' ') return i;
+        }
+        return endIndex; // Fallback if no space is found
+    };
+
+    // Split text into blocks but make sure to split on spaces
+    const blocks = useMemo(() => {
+        let startIndex = 0;
+        const blocks = [];
+
+        while (startIndex < text.length) {
+            let tentativeEndIndex = startIndex + blockSize;
+            if (tentativeEndIndex < text.length) {
+                tentativeEndIndex = findNearestSpace(text, startIndex, tentativeEndIndex);
+            } else {
+                tentativeEndIndex = text.length;
+            }
+
+            blocks.push(text.slice(startIndex, tentativeEndIndex));
+            startIndex = tentativeEndIndex + 1; // Move past the space
+        }
+
+        return blocks;
+    }, [text, blockSize]);
+
+    const renderBlock = useCallback((index, block) => {
+        return (
+            <div className="text-block" key={index}>
+                {block.split('').map((char, charIndex) => {
+                    const absoluteIndex = index * blockSize + charIndex;
+                    let status = '';
+                    const userInputChar = userInput[absoluteIndex];
+
+                    if (absoluteIndex < userInput.length) {
+                        status = userInputChar === char ? 'correct' : 'incorrect';
+                    } else if (isFocused && absoluteIndex === userInput.length) {
+                        status = 'current';
+                    }
+
+                    return <Character key={charIndex} char={char} status={status} />;
+                })}
+            </div>
+        );
+    }, [userInput, isFocused, blockSize]);
+
+    return (
+        <Virtuoso
+            data={blocks}
+            itemContent={(index, block) => renderBlock(index, block)}
+            style={{ overflow: 'hidden', scrollBehavior: 'smooth' }}
+            overscan={70}
+            id='text'
+        />
+    );
+};
+
+TypingText.displayName = 'TypingText';
 
 const TypingArea = ({ text, seconds, showResults }) => {
     const hiddenInputRef = useRef(null);
@@ -17,8 +84,10 @@ const TypingArea = ({ text, seconds, showResults }) => {
     const [timeElapsed, setTimeElapsed] = useState(0);
     const [startTime, setStartTime] = useState(null);
     const [typoCount, setTypoCount] = useState(0);
+    const [typedCount, setTypedCount] = useState(0);
     const [lastInputIsTypo, setLastInputIsTypo] = useState(false);
     const noTimer = seconds === -1;
+    // const [count, setCount] = useState(0);
 
     useEffect(() => {
         if (isRunning) {
@@ -36,14 +105,14 @@ const TypingArea = ({ text, seconds, showResults }) => {
                 const timeElapsed = Math.floor((now - startTime) / 1000);
                 setTimeElapsed(timeElapsed);
                 // onData(timeElapsed);
-            }, 1000);
+            }, 333);
         } else if (isRunning && seconds - timeElapsed <= 0) {
             setIsRunning(false);
             hiddenInputRef.current.blur();
             // get text until the last character the user typed
             const userText = text.slice(0, userInput.length);
             const { correctCount, incorrectCount } = countCorrectAndIncorrect(userInput, userText);
-            showResults(timeElapsed, correctCount, incorrectCount, typoCount);
+            showResults(timeElapsed, correctCount, incorrectCount, typoCount, typedCount);
 
         }
 
@@ -104,101 +173,76 @@ const TypingArea = ({ text, seconds, showResults }) => {
         return { correctCount, incorrectCount };
     };
 
+    const scroll = (scrollValue) => {
+        const scrollDiv = document.getElementById('text');
+        if (scrollDiv) {
+            // Scrolls the div by the specified number of pixels
+            scrollDiv.scrollTop += scrollValue;
+        }
+    };
+    
     const handleUserInput = (e) => {
+        // check if backspace was pressed
+        let backspacePressed = false;
+        if (e.nativeEvent.inputType === 'deleteContentBackward') {
+            backspacePressed = true;
+        } else {
+            setTypedCount(prevTypedCount => prevTypedCount + 1);
+        }
+
         if (!isRunning) {
             setIsRunning(true);
         }
 
-        const currentCharRect = typingAreaRef.current.children[0].children[userInput.length].getBoundingClientRect();
-
+        // const currentCharRect = typingAreaRef.current.children[0].children[userInput.length].getBoundingClientRect();
         const input = e.target.value;
         setUserInput(input);
 
-        // if not backspace, increment typo count if the current character is incorrect and the last input was not a typo
         if (input.length >= userInput.length) {
             if (input[input.length - 1] !== text[input.length - 1]) {
                 setTypoCount(typoCount + 1);
             }
-            //     setLastInputIsTypo(true);
-            // } else if (input[input.length - 1] === text[input.length - 1] && lastInputIsTypo) {
-            //     setLastInputIsTypo(false);
-            // }
         }
 
         // Check if the user has finished typing all the text
         if (input.length === text.length && input) {
             hiddenInputRef.current.blur();
-            console.log('finished');
-            setTimeout(() => {
-                const { correctCount, incorrectCount } = countCorrectAndIncorrect(input, text);
-                showResults(timeElapsed, correctCount, incorrectCount, typoCount);
-            }, 1000);
+            const { correctCount, incorrectCount } = countCorrectAndIncorrect(input, text);
+            showResults(timeElapsed, correctCount, incorrectCount, typoCount, typedCount);
         }
 
-        try {
-            // Automatically scroll to the next line
-            const nextCharRect = typingAreaRef.current.children[0].children[input.length].getBoundingClientRect();
+        const amountOfBlocks = typingAreaRef.current.children[0].children[0].lastElementChild.children.length;
+        for (let i = 0; i < amountOfBlocks; i++) {
+            const currentBlock = typingAreaRef.current.children[0].children[0].lastElementChild.children[i].lastElementChild;
+            const currentCharElement = currentBlock.querySelector('.current');
 
-            if (nextCharRect.bottom > currentCharRect.bottom) {
-                // Move the typing area up by the height of the next line
-                const currentBottom = typingAreaRef.current.style.bottom ? parseInt(typingAreaRef.current.style.bottom) : 0;
-
-                // 66 is the height of a line. Use raw number to avoid problem when mid animation
-                typingAreaRef.current.style.bottom = `${currentBottom + 66}px`;          
+            if (currentCharElement) {
+                let currentCharRect = currentCharElement.getBoundingClientRect();
+                
+                if (e.nativeEvent.inputType === 'deleteContentBackward') {
+                    // Check if current character is not the first child
+                    if (currentCharElement !== currentBlock.firstElementChild) {
+                        let previousCharRect = currentCharElement.previousElementSibling.getBoundingClientRect();
+                        
+                        // Check if the previous character is on a different line
+                        if (previousCharRect.bottom + 2 < currentCharRect.bottom) {
+                            scroll(-52); // Scroll up
+                        }
+                    }
+                } else {
+                    // Check if current character is not the last child
+                    if (currentCharElement !== currentBlock.lastElementChild) {
+                        let nextCharRect = currentCharElement.nextElementSibling.getBoundingClientRect();
+                
+                        // Check if the next character is on a different line
+                        if (nextCharRect.bottom > currentCharRect.bottom) {
+                            scroll(52); // Scroll down
+                        }
+                    }
+                }
             }
-
-            // if backspaced and the current character is on the previous line
-            if (currentCharRect.bottom > nextCharRect.bottom + 2) {
-                const currentBottom = typingAreaRef.current.style.bottom ? parseInt(typingAreaRef.current.style.bottom) : 0;
-                typingAreaRef.current.style.bottom = `${currentBottom - 66}px`;
-            }
-        } catch (error) {
-            console.log(error);
         }
     };
-
-    const renderCharacter = useCallback((char, index) => {
-        let status = '';
-        const userInputChar = userInput[index];
-
-        if (index < userInput.length) {
-            // need to increment a counter for incorrect chars
-            if (userInputChar === char) {
-                status = 'correct';
-                // if (lastInputIsTypo) {
-                //     setLastInputIsTypo(false);
-                // }
-            } else {
-                status = 'incorrect';
-                // if (!lastInputIsTypo) {
-                    // setTypoCount(typoCount + 1);
-                //     setLastInputIsTypo(true);
-                // }
-            }
-            // status = userInputChar === char ? 'correct' : 'incorrect';
-
-        } else if (isFocused && index === userInput.length) {
-            status += ' current';
-        }
-
-        return <Character key={index} char={char} status={status} />;
-    }, [userInput, isFocused]);
-
-    const renderText = useCallback(() => {
-        let tempText;
-        if (userInput.length > text.length - 300) {
-            tempText = text;
-        }
-
-        if (userInput.length < 2400) {
-            tempText = text.slice(0, 2500);
-        } else if (userInput.length < 4000) {
-            tempText = text.slice(0, 4100);
-        } else if (userInput.length < 6000) {
-            tempText = text.slice(0, 6100);
-        }
-        return text.split('').map(renderCharacter);
-    }, [text, renderCharacter]);
 
     return (
         <div className='outer-container'>
@@ -212,15 +256,12 @@ const TypingArea = ({ text, seconds, showResults }) => {
                 {!isFocused && (
                     <div id='message-focus-container'>
                         <div id='focus'>
-                            Click To Type
+                            Click or Spacebar To Type
                         </div>
                     </div>
                 )}
-
                 <div id="typing-area" onClick={() => hiddenInputRef.current.focus()} ref={typingAreaRef}>
-                    <div className="text">
-                        {renderText()}
-                    </div>
+                <TypingText text={text} userInput={userInput} isFocused={isFocused} id="text" />
                     <input
                         type="text"
                         ref={hiddenInputRef}
@@ -231,7 +272,6 @@ const TypingArea = ({ text, seconds, showResults }) => {
                         onBlur={handleBlur}
                     />
                 </div>
-
             </div>
         </div>
 
