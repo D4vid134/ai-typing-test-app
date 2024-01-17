@@ -11,63 +11,45 @@ const Character = memo(({ char, status }) => {
 
 Character.displayName = 'Character';
 
-const TypingText = ({ text, userInput, isFocused }) => {
-    // Define the block size
-    const blockSize = 600; // Adjust based on your layout
-    // Function to find the nearest space
-    const findNearestSpace = (text, startIndex, endIndex) => {
-        for (let i = endIndex; i > startIndex; i--) {
-            if (text[i] === ' ') return i;
-        }
-        return endIndex; // Fallback if no space is found
-    };
-
-    // Split text into blocks but make sure to split on spaces
-    const blocks = useMemo(() => {
-        let startIndex = 0;
-        const blocks = [];
-
-        while (startIndex < text.length) {
-            let tentativeEndIndex = startIndex + blockSize;
-            if (tentativeEndIndex < text.length) {
-                tentativeEndIndex = findNearestSpace(text, startIndex, tentativeEndIndex);
-            } else {
-                tentativeEndIndex = text.length;
+const TypingText = ({ passages, userInput, isFocused }) => {
+        // Define the block size
+        const blocks = useMemo(() => {
+            let cumulativeLength = 0;
+            const resultBlocks = [];
+    
+            for (let i = 0; i < passages.length; i++) {
+                resultBlocks.push({ text: passages[i], startIndex: cumulativeLength });
+                cumulativeLength += passages[i].length; // Update cumulativeLength after pushing the block
             }
-
-            blocks.push(text.slice(startIndex, tentativeEndIndex));
-            startIndex = tentativeEndIndex + 1; // Move past the space
-        }
-
-        return blocks;
-    }, [text, blockSize]);
-
-    const renderBlock = useCallback((index, block) => {
-        return (
-            <div className="text-block" key={index}>
-                {block.split('').map((char, charIndex) => {
-                    const absoluteIndex = index * blockSize + charIndex;
-                    let status = '';
-                    const userInputChar = userInput[absoluteIndex];
-
-                    if (absoluteIndex < userInput.length) {
-                        status = userInputChar === char ? 'correct' : 'incorrect';
-                    } else if (isFocused && absoluteIndex === userInput.length) {
-                        status = 'current';
-                    }
-
-                    return <Character key={charIndex} char={char} status={status} />;
-                })}
-            </div>
-        );
-    }, [userInput, isFocused, blockSize]);
+    
+            return resultBlocks;
+        }, [passages]);
+    
+        const renderBlock = useCallback((index, block) => {
+            return (
+                <div className="text-block" key={index}>
+                    {block.text.split('').map((char, charIndex) => {
+                        const absoluteIndex = block.startIndex + charIndex;
+                        let status = '';
+                        const userInputChar = userInput[absoluteIndex];
+                        if (absoluteIndex < userInput.length) {
+                            status = userInputChar === char ? 'correct' : 'incorrect';
+                        } else if (isFocused && absoluteIndex === userInput.length) {
+                            status = 'current';
+                        }
+    
+                        return <Character key={charIndex} char={char} status={status} />;
+                    })}
+                </div>
+            );
+        }, [userInput, isFocused]);
 
     return (
         <Virtuoso
             data={blocks}
             itemContent={(index, block) => renderBlock(index, block)}
             style={{ overflow: 'hidden', scrollBehavior: 'smooth' }}
-            overscan={70}
+            overscan={100}
             id='text'
         />
     );
@@ -75,7 +57,7 @@ const TypingText = ({ text, userInput, isFocused }) => {
 
 TypingText.displayName = 'TypingText';
 
-const TypingArea = ({ text, seconds, showResults }) => {
+const TypingArea = ({ passages, seconds, showResults, text }) => {
     const hiddenInputRef = useRef(null);
     const typingAreaRef = useRef(null);
     const [userInput, setUserInput] = useState('');
@@ -85,6 +67,7 @@ const TypingArea = ({ text, seconds, showResults }) => {
     const [startTime, setStartTime] = useState(null);
     const [typoCount, setTypoCount] = useState(0);
     const [typedCount, setTypedCount] = useState(0);
+    const keysPressed = useRef({});
     const [lastInputIsTypo, setLastInputIsTypo] = useState(false);
     const noTimer = seconds === -1;
     // const [count, setCount] = useState(0);
@@ -97,6 +80,55 @@ const TypingArea = ({ text, seconds, showResults }) => {
         }
     }, [isRunning]);
 
+    useEffect(() => {
+        reset();
+    }, [text]);
+
+    const reset = () => {
+        setIsRunning(false);
+        setUserInput('');
+        setTimeElapsed(0);
+        setStartTime(null);
+        setTypoCount(0);
+        setLastInputIsTypo(false);
+        hiddenInputRef.current.value = '';
+    };
+
+    useEffect(() => {
+        function downHandler(event) {
+            const { key } = event;
+            if (key === 'Enter' || key === 'Tab' ) {
+                event.preventDefault();
+                // register it as a space input 
+            }
+            keysPressed.current[key] = true;
+
+            if (keysPressed.current['Enter'] && keysPressed.current['Tab']) {
+                event.preventDefault();
+                showResults(0, 0, 0, 0, 0);
+            }
+        }
+
+        function upHandler({ key }) {
+            keysPressed.current[key] = false;
+
+            if (key === ' ') {
+                hiddenInputRef.current.focus();
+            }
+
+
+        }
+
+        window.addEventListener('keydown', downHandler);
+        window.addEventListener('keyup', upHandler);
+
+        // Remove event listeners on cleanup
+        return () => {
+            window.removeEventListener('keydown', downHandler);
+            window.removeEventListener('keyup', upHandler);
+        };
+    }, []);
+    
     useEffect(() => {
         let intervalId;
         if (isRunning && (seconds - timeElapsed > 0 || noTimer)) {
@@ -140,22 +172,6 @@ const TypingArea = ({ text, seconds, showResults }) => {
         typingAreaRef.current.style.filter = 'blur(10px)';
     };
 
-    // Focus the hidden input whenever the component mounts
-    useEffect(() => {
-        // hiddenInputRef.current.focus();
-        reset();
-    }, [text]);
-
-    const reset = () => {
-        setIsRunning(false);
-        setUserInput('');
-        setTimeElapsed(0);
-        setStartTime(null);
-        setTypoCount(0);
-        setLastInputIsTypo(false);
-        hiddenInputRef.current.value = '';
-    };
-
     const countCorrectAndIncorrect = (userText, text) => {
         let correctCount = 0;
         let incorrectCount = 0;
@@ -180,12 +196,50 @@ const TypingArea = ({ text, seconds, showResults }) => {
             scrollDiv.scrollTop += scrollValue;
         }
     };
+
+    const handleScrolling = (currentBlock, currentCharElement, inputType, currentBlockIndex) => {
+        const scrollAmount = 48;
+        let currentCharRect = currentCharElement.getBoundingClientRect();
+        
+            if (inputType === 'deleteContentBackward') {
+                if (currentCharElement !== currentBlock.firstElementChild) {
+                    let previousCharRect = currentCharElement.previousElementSibling.getBoundingClientRect();
+                    
+                    if (previousCharRect.bottom + 2 < currentCharRect.bottom) {
+                        scroll(-scrollAmount);
+                    }
+                } else {
+                    const previousBlock = typingAreaRef.current.children[0].children[0].lastElementChild.children[currentBlockIndex - 1].lastElementChild;
+                    const previousCharElement = previousBlock.lastElementChild;
+                    let previousCharRect = previousCharElement.getBoundingClientRect();
+                    if (previousCharRect.bottom + 2 < currentCharRect.bottom) {
+                        scroll(-scrollAmount);
+                    }
+                }
+            } else {
+                if (currentCharElement !== currentBlock.lastElementChild) {
+                    let nextCharRect = currentCharElement.nextElementSibling.getBoundingClientRect();
+            
+                    if (nextCharRect.bottom > currentCharRect.bottom) {
+                        scroll(scrollAmount);
+                    }
+                } else {
+                    console.log('next block');
+                    const nextBlock = typingAreaRef.current.children[0].children[0].lastElementChild.children[currentBlockIndex + 1].lastElementChild;
+                    const nextCharElement = nextBlock.firstElementChild;
+                    let nextCharRect = nextCharElement.getBoundingClientRect();
+                    if (nextCharRect.bottom > currentCharRect.bottom) {
+                        scroll(scrollAmount);
+                    }
+                }
+            }
+    };
     
     const handleUserInput = (e) => {
         // check if backspace was pressed
-        let backspacePressed = false;
-        if (e.nativeEvent.inputType === 'deleteContentBackward') {
-            backspacePressed = true;
+        const inputType = e.nativeEvent.inputType;
+        if (inputType === 'deleteContentBackward') {
+            // backspacePressed = true;
         } else {
             setTypedCount(prevTypedCount => prevTypedCount + 1);
         }
@@ -193,9 +247,12 @@ const TypingArea = ({ text, seconds, showResults }) => {
         if (!isRunning) {
             setIsRunning(true);
         }
-
         // const currentCharRect = typingAreaRef.current.children[0].children[userInput.length].getBoundingClientRect();
-        const input = e.target.value;
+        let input = e.target.value;
+        
+        if (e.nativeEvent.key === 'Enter') {
+            input = e.target.value + ' ';
+        }
         setUserInput(input);
 
         if (input.length >= userInput.length) {
@@ -217,29 +274,7 @@ const TypingArea = ({ text, seconds, showResults }) => {
             const currentCharElement = currentBlock.querySelector('.current');
 
             if (currentCharElement) {
-                let currentCharRect = currentCharElement.getBoundingClientRect();
-                
-                if (e.nativeEvent.inputType === 'deleteContentBackward') {
-                    // Check if current character is not the first child
-                    if (currentCharElement !== currentBlock.firstElementChild) {
-                        let previousCharRect = currentCharElement.previousElementSibling.getBoundingClientRect();
-                        
-                        // Check if the previous character is on a different line
-                        if (previousCharRect.bottom + 2 < currentCharRect.bottom) {
-                            scroll(-52); // Scroll up
-                        }
-                    }
-                } else {
-                    // Check if current character is not the last child
-                    if (currentCharElement !== currentBlock.lastElementChild) {
-                        let nextCharRect = currentCharElement.nextElementSibling.getBoundingClientRect();
-                
-                        // Check if the next character is on a different line
-                        if (nextCharRect.bottom > currentCharRect.bottom) {
-                            scroll(52); // Scroll down
-                        }
-                    }
-                }
+                handleScrolling(currentBlock, currentCharElement, inputType, i);
             }
         }
     };
@@ -261,7 +296,7 @@ const TypingArea = ({ text, seconds, showResults }) => {
                     </div>
                 )}
                 <div id="typing-area" onClick={() => hiddenInputRef.current.focus()} ref={typingAreaRef}>
-                <TypingText text={text} userInput={userInput} isFocused={isFocused} id="text" />
+                <TypingText passages={passages} userInput={userInput} isFocused={isFocused} id="text" />
                     <input
                         type="text"
                         ref={hiddenInputRef}
@@ -270,6 +305,14 @@ const TypingArea = ({ text, seconds, showResults }) => {
                         className='hidden-input'
                         onFocus={handleFocus}
                         onBlur={handleBlur}
+                        // on enter button do handleUserInput but with a space
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleUserInput(e);
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }
+                        }}
                     />
                 </div>
             </div>

@@ -1,17 +1,38 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./Results.scss";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typedCount }) => {
+const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typedCount, type, trigger}) => {
+    const [results, setResults] = useState([]);
+
     useEffect(() => {
         // console.log(currentUser);
-    }, [timeElapsed]);
+        if (timeElapsed > 0) {
+            const minutes = (timeElapsed / 60).toString();
+            const result = {
+                wpm: calculateWpm(),
+                accuracy: calculateAccuracy(),
+                correctedAccuracy: calculateCorrectedAccuracy(),
+            };
+            // add result to user's results array in local storage
+            const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {};
+            const storageResults = storageResultsForMinute[type] || [];
+
+            if (storageResults.length >= 30) {
+                storageResults.shift();
+            }
+
+            storageResults.push(result);
+            storageResultsForMinute[type] = storageResults;
+            localStorage.setItem("resultsFor" +  minutes, JSON.stringify(storageResultsForMinute));
+            setResults(storageResults);
+        }
+    }, [timeElapsed, trigger]);
 
     const calculateWpm = () => {
         // docks 5 characters for every typo 
@@ -48,31 +69,43 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typ
         return accuracy;
     }
 
-    return (
-        //if results is empty object, show nothing
-        <div className="results">
-        {timeElapsed && (
-            <div className="results-content">
-                <div className="results-content-item first">
-                    <div className="name">Characters</div>
-                    <div className="value">{correctCharacters + notCorrectedTypos}</div>
-                </div>
-                <div className="results-content-item">
-                    <div className="name">WPM</div>
-                    <div className="value">{calculateWpm()}</div>
-                </div>
-                <div className="results-content-item">
-                    <div className="name">Accuracy</div>
-                    <div className="value">{calculateAccuracy()}%</div>
-                </div>
-                <div className="results-content-item last">
-                    <div className="name">Corrected Acc.</div>
-                    <div className="value">{calculateCorrectedAccuracy()}%</div>
-                </div>
+    const averageOfPast5 = () => {
+        let sum = 0;
+        let count = 0;
+        console.log(results);
+        for (let i = results.length - 1; i >= 0 && count < 5; i--) {
+            sum += results[i].wpm;
+            count++;
+        }
+        return Math.floor(sum / count);
+    }
 
+    return (
+        <>
+            <div className="results">
+                {timeElapsed && (
+                    <div className="results-content">
+                        <div className="results-content-item first">
+                            <div className="name">WPM</div>
+                            <div className="value">{calculateWpm()}</div>
+                        </div>
+                        <div className="results-content-item">
+                            <div className="name">Accuracy</div>
+                            <div className="value">{calculateAccuracy()}%</div>
+                        </div>
+                        <div className="results-content-item">
+                            <div className="name">Corrected Acc.</div>
+                            <div className="value">{calculateCorrectedAccuracy()}%</div>
+                        </div>
+                        <div className="results-content-item last">
+                            <div className="name">Past 5 Avg WPM</div>
+                            <div className="value">{averageOfPast5()}</div>
+                        </div>
+
+                    </div>
+                )}
             </div>
-        )}
-    </div>
+        </>
     );
 }
 

@@ -19,9 +19,10 @@ const Home = () => {
     const [type, setType] = useState('All');
     const [minutes, setMinutes] = useState(1);
     const [typingAreaKey, setTypingAreaKey] = useState(0);
+    const [newResultsTrigger, setNewResultsTrigger] = useState(0);
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
-        queryKey: ['fetchPassages', { category: type, amount: minutes * 3 }],
+        queryKey: ['fetchPassages', { category: type, amount: minutes * 4 }],
         queryFn: async ({ queryKey }) => {
             // Extract the category and amount from the queryKey
             const [, { category, amount }] = queryKey;
@@ -31,7 +32,8 @@ const Home = () => {
                 amount: amount,
             });
             console.log(response);
-            return response.data.text;
+            console.log(response.data.passages[0])
+            return response.data.passages;
         },
         refetchOnWindowFocus: false,
         refetchOnMount: false,
@@ -55,11 +57,17 @@ const Home = () => {
         };
         console.log(results);
         refreshText();
-        setResults(results);
+        setNewResultsTrigger(prevTrigger => prevTrigger + 1);
+        console.log(newResultsTrigger);
+        if (results.timeElapsed !== 0) {
+            setResults(results);
+        }
+
     };
 
     const renderResults = (results) => {
-        console.log(results.results);
+        console.log(results);
+        console.log(newResultsTrigger);
         return (
             <div className="results">
                 <Results 
@@ -68,6 +76,8 @@ const Home = () => {
                     typos={results.results.typos}
                     notCorrectedTypos={results.results.notCorrectedTypos}
                     typedCount={results.results.typedCount}
+                    type={type}
+                    trigger={newResultsTrigger}
                 />
             </div>
         );
@@ -148,9 +158,11 @@ const Home = () => {
                 ) : data ? (
                     <TypingArea 
                         key={typingAreaKey} // Use the key here
-                        text={data}
+                        passages={data}
                         seconds={minutes * 60}
                         showResults={showResults}
+                        // text = data array concatented into one string
+                        text={data.join(' ')}
                     />
                 ) : (
                     <div className='loading-container'>
@@ -162,6 +174,13 @@ const Home = () => {
                     </div>
                 )}
                     {error && <div>Error: {error.message}</div>}
+
+                <div id='quick-actions'>
+                    Quick Actions:
+                    <span>Tab + Enter = Reset </span> |
+                    <span>Esc = View History </span> |
+                    <span>Spacebar = Focus</span>
+                </div>
                 <div>
                     {renderResults({results})}
                 </div>

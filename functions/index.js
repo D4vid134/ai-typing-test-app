@@ -107,18 +107,13 @@ exports.fetchPassages = functions.https.onRequest((req, res) => {
 
     const passages = await fetchPassages(category, amount);
 
-    //convert passages into one long string with a space between each passage except the last one
-    let passageString = "";
-
+    // for each passage add a space at the end
     for (let i = 0; i < passages.length; i++) {
-      passageString += passages[i];
-      if (i < passages.length - 1) {
-        passageString += " ";
-      }
+      passages[i] += " ";
     }
 
     return res.status(200).send({
-      text: passageString,
+      passages: passages,
     });
   });
 });
