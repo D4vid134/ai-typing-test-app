@@ -13,6 +13,10 @@ import { firebaseFunctionsKey } from '../../firebase';
 import Results from '../../components/Results/Results';
 import CircularProgress from '@mui/material/CircularProgress';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import DialogTitle from '@mui/material/DialogTitle';
+import Dialog from '@mui/material/Dialog';
+import HistoryDialog from '../../components/History/HistoryDialog';
+
 
 const Home = () => {
     const [results, setResults] = useState({}); //[timeElapsed, characters, typos, notCorrectedTypos]
@@ -20,6 +24,7 @@ const Home = () => {
     const [minutes, setMinutes] = useState(1);
     const [typingAreaKey, setTypingAreaKey] = useState(0);
     const [newResultsTrigger, setNewResultsTrigger] = useState(0);
+    const [open, setOpen] = useState(false);
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
         queryKey: ['fetchPassages', { category: type, amount: minutes * 4 }],
@@ -81,6 +86,49 @@ const Home = () => {
                 />
             </div>
         );
+    }
+
+    useEffect(() => {
+        function downHandler(event) {
+            const { key } = event;
+            console.log(key);
+            if (key === 'Escape') {
+                event.preventDefault();
+                setOpen(true);
+            }
+        }
+
+        window.addEventListener('keydown', downHandler);
+        // window.addEventListener('keyup', upHandler);
+
+        // Remove event listeners on cleanup
+        return () => {
+            window.removeEventListener('keydown', downHandler);
+            // window.removeEventListener('keyup', upHandler);
+        };
+    }, []);
+
+    function SimpleDialog(props) {
+        const { onClose, open } = props;
+      
+        const handleClose = () => {
+          onClose(selectedValue);
+        };
+      
+        const handleListItemClick = (value) => {
+          onClose(value);
+        };
+      
+        return (
+          <Dialog onClose={handleClose} open={open}>
+            <DialogTitle>Set backup account</DialogTitle>
+            <div>ddasdddddddddddddddddd</div>
+          </Dialog>
+        );
+    }
+
+    const handleClose = () => {
+        setOpen(false);
     }
 
     return (
@@ -185,6 +233,7 @@ const Home = () => {
                     {renderResults({results})}
                 </div>
             </div>
+            <HistoryDialog />
           
         </div>
       );

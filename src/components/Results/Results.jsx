@@ -23,7 +23,7 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typ
             const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {};
             const storageResults = storageResultsForMinute[type] || [];
 
-            if (storageResults.length >= 30) {
+            if (storageResults.length >= 50) {
                 storageResults.shift();
             }
 
