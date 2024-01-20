@@ -65,7 +65,8 @@
     box-sizing: border-box;
     font-size: 1.875rem;
     padding: 0px .675rem;
-    font-family: Arial, Helvetica, sans-serif;
+    // font-family: Arial, Helvetica, sans-serif;
+    font-family: "Roboto Mono";
     cursor: text;
     position: relative;
     transition: filter 0.2s ease-out, bottom 0.3s ease-out;
@@ -80,12 +81,12 @@
         // font-weight: 500;
         &.correct {
             // color: #7FBAE7;
-            background-color: #7FBAE7;
+            background-color: #00FF00;
         }
 
         &.incorrect {
             // color: #df2b28;
-            background-color: #df2b28;
+            background-color: #FF6666;
         }
 
         &.current {

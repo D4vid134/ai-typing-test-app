@@ -13,8 +13,6 @@ import { firebaseFunctionsKey } from '../../firebase';
 import Results from '../../components/Results/Results';
 import CircularProgress from '@mui/material/CircularProgress';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import DialogTitle from '@mui/material/DialogTitle';
-import Dialog from '@mui/material/Dialog';
 import HistoryDialog from '../../components/History/HistoryDialog';
 
 
@@ -24,10 +22,9 @@ const Home = () => {
     const [minutes, setMinutes] = useState(1);
     const [typingAreaKey, setTypingAreaKey] = useState(0);
     const [newResultsTrigger, setNewResultsTrigger] = useState(0);
-    const [open, setOpen] = useState(false);
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
-        queryKey: ['fetchPassages', { category: type, amount: minutes * 4 }],
+        queryKey: ['fetchPassages', { category: type, amount: minutes * 6 }],
         queryFn: async ({ queryKey }) => {
             // Extract the category and amount from the queryKey
             const [, { category, amount }] = queryKey;
@@ -88,48 +85,25 @@ const Home = () => {
         );
     }
 
-    useEffect(() => {
-        function downHandler(event) {
-            const { key } = event;
-            console.log(key);
-            if (key === 'Escape') {
-                event.preventDefault();
-                setOpen(true);
-            }
-        }
+    // useEffect(() => {
+    //     function downHandler(event) {
+    //         const { key } = event;
+    //         console.log(key);
+    //         if (key === 'Escape') {
+    //             event.preventDefault();
+    //             setOpen(true);
+    //         }
+    //     }
 
-        window.addEventListener('keydown', downHandler);
-        // window.addEventListener('keyup', upHandler);
+    //     window.addEventListener('keydown', downHandler);
+    //     // window.addEventListener('keyup', upHandler);
 
-        // Remove event listeners on cleanup
-        return () => {
-            window.removeEventListener('keydown', downHandler);
-            // window.removeEventListener('keyup', upHandler);
-        };
-    }, []);
-
-    function SimpleDialog(props) {
-        const { onClose, open } = props;
-      
-        const handleClose = () => {
-          onClose(selectedValue);
-        };
-      
-        const handleListItemClick = (value) => {
-          onClose(value);
-        };
-      
-        return (
-          <Dialog onClose={handleClose} open={open}>
-            <DialogTitle>Set backup account</DialogTitle>
-            <div>ddasdddddddddddddddddd</div>
-          </Dialog>
-        );
-    }
-
-    const handleClose = () => {
-        setOpen(false);
-    }
+    //     // Remove event listeners on cleanup
+    //     return () => {
+    //         window.removeEventListener('keydown', downHandler);
+    //         // window.removeEventListener('keyup', upHandler);
+    //     };
+    // }, []);
 
     return (
         <div className="home">
@@ -178,6 +152,7 @@ const Home = () => {
                         value={minutes}
                         onChange={(e) => setMinutes(e.target.value)}
                         >
+                        <MenuItem value={0.5}>30 Seconds</MenuItem>
                         <MenuItem value={1}>1 Minute</MenuItem>
                         <MenuItem value={2}>2 Minutes</MenuItem>
                         <MenuItem value={3}>3 Minutes</MenuItem>
@@ -190,6 +165,12 @@ const Home = () => {
                     onClick={refreshText}
                     variant="contained"
                     size="large"
+                    style={{
+                        borderRadius: 35,
+                        backgroundColor: "black",
+                        padding: "8px 6px",
+                        fontSize: "18px",
+                    }}
                 >
                     <RefreshIcon />
                 </LoadingButton>
@@ -210,7 +191,7 @@ const Home = () => {
                         seconds={minutes * 60}
                         showResults={showResults}
                         // text = data array concatented into one string
-                        text={data.join(' ')}
+                        text={data.join('')}
                     />
                 ) : (
                     <div className='loading-container'>
@@ -233,7 +214,7 @@ const Home = () => {
                     {renderResults({results})}
                 </div>
             </div>
-            <HistoryDialog />
+            <HistoryDialog trigger={newResultsTrigger}/>
           
         </div>
       );

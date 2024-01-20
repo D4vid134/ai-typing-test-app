@@ -6,25 +6,27 @@ import { AuthContext } from "../../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogTitle } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select, Box, Dialog, DialogTitle, DialogContent} from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-
-const HistoryDialog = () => {
-    const { currentUser } = useContext(AuthContext);
+const HistoryDialog = ({trigger}) => {
+    // const { currentUser } = useContext(AuthContext);
     const navigate = useNavigate();
-
-
     const [open, setOpen] = useState(false);
     const [type, setType] = useState("All");
-    const [minutes, setMinutes] = useState("3");
+    const [minutes, setMinutes] = useState(1);
     const [results, setResults] = useState([]);
+    const [amount, setAmount] = useState(10000);
 
     useEffect(() => {
         // console.log(currentUser);
-        const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {};
+        const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {}
         const storageResults = storageResultsForMinute[type] || [];
         setResults(storageResults);
-    }, []);
+        console.log(amount)
+    }, [amount, minutes, type, trigger]);
 
 
     const filterOutliers = (numArr) => {
@@ -41,10 +43,6 @@ const HistoryDialog = () => {
     }
 
     const calculateMetric = (amount, excludeOutlier, metric) => {
-        if (amount > 10000) {
-            amount = results.length;
-        }
-    
         let totalMetric = 0;
         let metricArr = [];
         let total = 0;
@@ -88,10 +86,153 @@ const HistoryDialog = () => {
         setOpen(false);
     };
 
+    const renderResults = (results) => {
+        results = results.slice(-amount);
+
+        const data = results.map((result) => {
+            const date = new Date(result.date);
+
+            const year = date.getFullYear().toString().slice(-2);
+            const month = (date.getMonth() + 1).toString();
+            const day = date.getDate().toString();
+
+            const monthStr = String(Number(month));
+            const dayStr = String(Number(day));
+
+            const dateStr = monthStr + '/' + dayStr + '/' + year;
+
+            return {
+                ...result,
+                date: dateStr,
+            };
+        });
+
+        return (
+            <ResponsiveContainer width="95%" height={250}>
+                <LineChart data={data}
+                    margin={{ top: 15, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="wpm" stroke="#8884d8" />
+                </LineChart>
+            </ResponsiveContainer>
+        );
+    }
+            
     return (
-        <Dialog onClose={handleClose} open={open}>
-            <DialogTitle>Set backup account</DialogTitle>
-            <div>Dialog Content</div>
+        <Dialog onClose={handleClose} open={open} fullWidth maxWidth={'md'}>
+            <DialogTitle>History</DialogTitle>
+            <IconButton
+            aria-label="close"
+            onClick={handleClose}
+            sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+            }}
+            >
+            <CloseIcon />
+            </IconButton>
+            <DialogContent dividers className="dialog-content">
+                <div id="toolbar-options">
+                    <Box
+                    sx={{
+                        width: 150,
+                        maxWidth: '100%',
+                    }}
+                    >
+                        <FormControl fullWidth>
+                            <InputLabel>History Length</InputLabel>
+                            <Select
+                                labelId="simple-select-label"
+                                defaultValue={50}
+                                label="History Length"
+                                size="small"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                            >
+                            <MenuItem value={10}>10</MenuItem>
+                            <MenuItem value={25}>25</MenuItem>
+                            <MenuItem value={50}>50</MenuItem>
+                            {/* <MenuItem value={100}>100</MenuItem>
+                            <MenuItem value={250}>250</MenuItem>
+                            <MenuItem value={500}>500</MenuItem> */}
+                            <MenuItem value={10000}>All</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    <Box
+                    sx={{
+                        width: 150,
+                        maxWidth: '100%',
+                    }}
+                    >
+                        <FormControl fullWidth>
+                            <InputLabel>Category</InputLabel>
+                            <Select
+                                labelId="simple-select-label"
+                                defaultValue={"Science"}
+                                label="Category"
+                                size="small"
+                                value={type}
+                                onChange={(e) => setType(e.target.value)}
+                            >
+                            <MenuItem value={"All"}>All</MenuItem>
+                            <MenuItem value={"science"}>Science</MenuItem>
+                            <MenuItem value={"history"}>History</MenuItem>
+                            <MenuItem value={"sports"}>Sports</MenuItem>
+                            <MenuItem value={"fun facts"}>Fun Facts</MenuItem>
+                            <MenuItem value={"mythology"}>Mythology</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+
+                    <Box
+                    sx={{
+                        width: 150,
+                        maxWidth: '100%',
+                    }}
+                    >
+                    <FormControl fullWidth>
+                        <InputLabel id="demo-simple-select-label">Time</InputLabel>
+                        <Select
+                        defaultValue={1}
+                        label="Time"
+                        size="small"
+                        value={minutes}
+                        onChange={(e) => setMinutes(e.target.value)}
+                        >
+                        <MenuItem value={0.5}>30 Seconds</MenuItem>
+                        <MenuItem value={1}>1 Minute</MenuItem>
+                        <MenuItem value={2}>2 Minutes</MenuItem>
+                        <MenuItem value={3}>3 Minutes</MenuItem>
+                        <MenuItem value={5}>5 Minutes</MenuItem>
+                        </Select>
+                    </FormControl>
+                    </Box>
+                </div>
+                <div className="history-content">
+                    <div className="history-content-item first">
+                        <div className="name">WPM</div>
+                        <div className="value">{calculateMetric(amount, false, "wpm")}</div>
+                    </div>
+                    <div className="history-content-item">
+                        <div className="name">Accuracy</div>
+                        <div className="value">{calculateMetric(amount, false, "accuracy")}%</div>
+                    </div>
+                    <div className="history-content-item">
+                        <div className="name">Corrected Acc.</div>
+                        <div className="value">{calculateMetric(amount, false, "correctedAccuracy")}%</div>
+                    </div>
+                </div>
+                <div className="graph">
+                    {renderResults(results)}
+                </div>
+            </DialogContent>
         </Dialog>
     );
 }

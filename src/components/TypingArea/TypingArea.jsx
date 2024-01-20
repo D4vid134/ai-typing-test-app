@@ -102,7 +102,6 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
                 // register it as a space input 
             }
             keysPressed.current[key] = true;
-
             if (keysPressed.current['Enter'] && keysPressed.current['Tab']) {
                 event.preventDefault();
                 showResults(0, 0, 0, 0, 0);
@@ -111,7 +110,6 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
 
         function upHandler({ key }) {
             keysPressed.current[key] = false;
-
             if (key === ' ') {
                 hiddenInputRef.current.focus();
             }
@@ -144,6 +142,10 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
             // get text until the last character the user typed
             const userText = text.slice(0, userInput.length);
             const { correctCount, incorrectCount } = countCorrectAndIncorrect(userInput, userText);
+            console.log(userInput);
+            console.log(userText);
+            console.log(correctCount);
+            console.log(incorrectCount);
             showResults(timeElapsed, correctCount, incorrectCount, typoCount, typedCount);
 
         }
@@ -258,15 +260,21 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
         if (input.length >= userInput.length) {
             if (input[input.length - 1] !== text[input.length - 1]) {
                 setTypoCount(typoCount + 1);
+                console.log(input)
+                console.log(input[input.length - 1])
+                console.log(text)
+                console.log(text[input.length - 1])
+
+                console.log('typo');
             }
         }
 
-        // Check if the user has finished typing all the text
-        if (input.length === text.length && input) {
-            hiddenInputRef.current.blur();
-            const { correctCount, incorrectCount } = countCorrectAndIncorrect(input, text);
-            showResults(timeElapsed, correctCount, incorrectCount, typoCount, typedCount);
-        }
+        // // Check if the user has finished typing all the text
+        // if (input.length === text.length && input) {
+        //     hiddenInputRef.current.blur();
+        //     const { correctCount, incorrectCount } = countCorrectAndIncorrect(input, text);
+        //     showResults(timeElapsed, correctCount, incorrectCount, typoCount, typedCount);
+        // }
 
         const amountOfBlocks = typingAreaRef.current.children[0].children[0].lastElementChild.children.length;
         for (let i = 0; i < amountOfBlocks; i++) {
@@ -310,7 +318,7 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
                             if (e.key === 'Enter') {
                                 handleUserInput(e);
                                 e.preventDefault();
-                                e.stopPropagation();
+                                // e.stopPropagation();
                             }
                         }}
                     />

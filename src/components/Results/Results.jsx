@@ -18,6 +18,7 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typ
                 wpm: calculateWpm(),
                 accuracy: calculateAccuracy(),
                 correctedAccuracy: calculateCorrectedAccuracy(),
+                date: new Date().toISOString(),
             };
             // add result to user's results array in local storage
             const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {};
