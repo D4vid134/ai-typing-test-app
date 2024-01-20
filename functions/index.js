@@ -119,6 +119,12 @@ exports.fetchPassages = functions.https.onRequest((req, res) => {
 
     const passages = await fetchPassages(category, amount);
 
+    for (let i = 0; i < passages.length; i++) {
+      if (passages[i].includes("–")) {
+        passages[i] = passages[i].replaceAll("–", "-");
+      }
+    }
+
     // for each passage add a space at the end
     for (let i = 0; i < passages.length; i++) {
       passages[i] += " ";

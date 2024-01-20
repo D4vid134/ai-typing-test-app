@@ -33,13 +33,13 @@ const Navbar = () => {
         <Link to="/">Fresh Type</Link>
       </div>
       <div className="navbar-menu">
-        {!currentUser ? (
+        {/* {!currentUser ? (
           <Link className="menu-item" to="/login">Login</Link>
         ) : (
           <div className="menu-item" onClick={handleLogout}>
             Logout
           </div>
-        )}
+        )} */}
         {/* Add more links as needed */}
       </div>
     </nav>
