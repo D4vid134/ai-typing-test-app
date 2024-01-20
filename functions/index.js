@@ -72,28 +72,40 @@ const fetchPassages = async (category, amount) => {
       } else {
         const categoryDoc = await admin.firestore().collection("passages").doc(category).get();
         subsections = categoryDoc.data().subsections;
-        categorySubjections[category] = subsections;
+        categorySubjections[category] = {...subsections}; // Copy the subsections
       }
-
+    
       // randomly select a subsection from the subsections map
       const subsectionKeys = Object.keys(subsections);
-      const subsection = subsectionKeys[Math.floor(Math.random() * subsectionKeys.length)];
-
+      if (subsectionKeys.length === 0) continue; // Skip if no more subsections are available
+    
+      const randomIndex = Math.floor(Math.random() * subsectionKeys.length);
+      const subsection = subsectionKeys[randomIndex];
+    
       const passage = subsections[subsection];
       passages.push(passage);
+    
+      // Remove the selected subsection
+      delete categorySubjections[category][subsection];
     }
     return passages;
   } else {
     const categoryDoc = await admin.firestore().collection("passages").doc(category).get();
     const subsections = categoryDoc.data().subsections;
     let passages = [];
+    let subsectionKeys = Object.keys(subsections);
+
     for (let i = 0; i < amount; i++) {
-      const subsectionKeys = Object.keys(subsections);
-      console.log(subsectionKeys);
-      const subsection = subsectionKeys[Math.floor(Math.random() * subsectionKeys.length)];
-      console.log(subsection);
+      if (subsectionKeys.length === 0) break; // Break if no more subsections are available
+
+      const randomIndex = Math.floor(Math.random() * subsectionKeys.length);
+      const subsection = subsectionKeys[randomIndex];
+
       const passage = subsections[subsection];
       passages.push(passage);
+
+      // Remove the selected subsection from the list
+      subsectionKeys.splice(randomIndex, 1);
     }
     return passages;
   }

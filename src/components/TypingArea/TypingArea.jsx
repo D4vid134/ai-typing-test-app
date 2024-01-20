@@ -260,12 +260,6 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
         if (input.length >= userInput.length) {
             if (input[input.length - 1] !== text[input.length - 1]) {
                 setTypoCount(typoCount + 1);
-                console.log(input)
-                console.log(input[input.length - 1])
-                console.log(text)
-                console.log(text[input.length - 1])
-
-                console.log('typo');
             }
         }
 

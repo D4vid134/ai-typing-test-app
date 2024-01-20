@@ -57,7 +57,6 @@ const Home = () => {
             notCorrectedTypos: incorrectCount,
             typedCount: typedCount,
         };
-        console.log(results);
         refreshText();
         setNewResultsTrigger(prevTrigger => prevTrigger + 1);
         console.log(newResultsTrigger);
@@ -68,8 +67,6 @@ const Home = () => {
     };
 
     const renderResults = (results) => {
-        console.log(results);
-        console.log(newResultsTrigger);
         return (
             <div className="results">
                 <Results 
