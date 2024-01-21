@@ -15,6 +15,12 @@ const cors = require("cors")({origin: true});
 const dotenv = require("dotenv");
 dotenv.config();
 const OpenAI = require("openai");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { setGlobalOptions } = require("firebase-functions/v2");
+
+setGlobalOptions({
+  maxInstances: 10,
+});
 
 const openai = new OpenAI({apiKey: process.env.OPENAI_APIKEY});
 const admin = require("firebase-admin");
@@ -125,6 +131,12 @@ exports.fetchPassages = functions.https.onRequest((req, res) => {
       }
     }
 
+    for (let i = 0; i < passages.length; i++) {
+      if (passages[i].includes("—")) {
+        passages[i] = passages[i].replaceAll("—", "-");
+      }
+    }
+
     // for each passage add a space at the end
     for (let i = 0; i < passages.length; i++) {
       passages[i] += " ";
@@ -135,6 +147,54 @@ exports.fetchPassages = functions.https.onRequest((req, res) => {
     });
   });
 });
+
+const generateNewPassage = async (subsection) => {
+  // pick a number between 70 and 130
+  const wordCount = Math.floor(Math.random() * (130 - 70 + 1) + 70);
+
+  // pick a random adjective between lesser known, interesting, famous, funny and informative
+  const adjectives = ["lesser known", "interesting", "famous", "funny", "informative", "weird", "less known", "Start with a question, ", "obscure"];
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+
+  const completion = await openai.chat.completions.create({
+    messages: [{"role": "system", "content": `you are generating text for a typing test. You speak plainly. 
+    The category is ${adjective} ${subsection}. generate a ${wordCount} word interesting thing to type about. Make sure its INTERESTING. Like a fun fact, cool person/event, or funny.
+    dont use headers or line spacing or restate the question. 
+    just the text in one big paragraph.`}],
+    model: "gpt-3.5-turbo-1106",
+  });
+
+  return completion.choices[0].message.content;
+}
+
+exports.updateNewPassage = onSchedule("every day 00:00", async (context) => {
+  // for each category, select a random subsection and get the passage. replace the old passage with the new one
+  const categories = ["fun facts", "history", "mythology", "sports", "science"];
+
+  for (let i = 0; i < categories.length; i++) {
+    const categoryDoc = await admin.firestore().collection("passages").doc(categories[i]).get();
+    const subsections = categoryDoc.data().subsections;
+    const subsectionKeys = Object.keys(subsections);
+
+    const randomIndex = Math.floor(Math.random() * subsectionKeys.length);
+    const subsection = subsectionKeys[randomIndex];
+
+    if (subsection.includes("custom")) {
+      i--;
+      continue;
+    }
+    console.log(subsection);
+
+    const passage = await generateNewPassage(subsection);
+
+    await admin.firestore().collection("passages").doc(categories[i]).update({
+      [`subsections.${subsection}`]: passage,
+    });
+  }
+});
+
+
+
 
 // const generateTextBasedOnCategory = async (category) => {
 //   const completion = await openai.chat.completions.create({

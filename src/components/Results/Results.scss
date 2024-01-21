@@ -50,6 +50,13 @@
         &.first {
             border-left: none;
         }
+
+        @media screen and (max-width: 500px) {
+            .name {
+                font-size: 0.75rem;
+                height: 1.5rem;
+            }
+        }
         
     }
 }

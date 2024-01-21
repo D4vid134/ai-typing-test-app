@@ -142,10 +142,6 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
             // get text until the last character the user typed
             const userText = text.slice(0, userInput.length);
             const { correctCount, incorrectCount } = countCorrectAndIncorrect(userInput, userText);
-            console.log(userInput);
-            console.log(userText);
-            console.log(correctCount);
-            console.log(incorrectCount);
             showResults(timeElapsed, correctCount, incorrectCount, typoCount, typedCount);
 
         }

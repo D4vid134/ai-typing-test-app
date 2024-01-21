@@ -33,8 +33,6 @@ const Home = () => {
                 category: category,
                 amount: amount,
             });
-            console.log(response);
-            console.log(response.data.passages[0])
             return response.data.passages;
         },
         refetchOnWindowFocus: false,
