@@ -2,7 +2,7 @@
     width: 80%;
     max-width: 1100px;
     margin: auto;
-    background-color: white;
+    background-color: var(--secondary-color);
     border-radius: 10px;
     height: 100dvh;
     max-height: 314px;
@@ -14,7 +14,7 @@
     box-shadow: 0px 0px 6px rgba(148, 148, 148, 0.5);
 
     .refresh-button {
-        background-color: black;
+        background-color: var(--primary-color);
     }
 
     #toolbar {
@@ -89,7 +89,7 @@
             justify-content: center;
             align-items: center;
             height: calc(100% - 3.125rem); /* 120px / 16px */
-            border: 2px solid #cacaca;
+            border: 2px solid var(--border-color);
             margin: 0px 1.25rem; /* 20px / 16px */
             width: calc(100% - 2.5rem - 4px); /* 40px / 16px */
             border-radius: 5px;

@@ -10,15 +10,30 @@ import { FormControl, InputLabel, MenuItem, Select, Box, Dialog, DialogTitle, Di
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ThemeContext } from "../../App";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
 
 const HistoryDialog = ({trigger}) => {
     // const { currentUser } = useContext(AuthContext);
+    const { theme } = useContext(ThemeContext);
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [type, setType] = useState("All");
     const [minutes, setMinutes] = useState(1);
     const [results, setResults] = useState([]);
     const [amount, setAmount] = useState(10000);
+
+    // set mui components to theme using miu theme provider
+    const muiTheme = createTheme({
+        palette: {
+            mode: theme,
+            // make background color darker
+            background: {
+                default: theme === "dark" ? "#000000" : "#f5f5f5",
+            },
+        },
+    });
 
     useEffect(() => {
         // console.log(currentUser);
@@ -107,6 +122,12 @@ const HistoryDialog = ({trigger}) => {
             };
         });
 
+        let stroke = "#2315db";
+        if (theme === "dark") {
+            stroke = "#98cdff";
+        }
+            
+
         return (
             <ResponsiveContainer width="95%" height={250}>
                 <LineChart data={data}
@@ -116,124 +137,126 @@ const HistoryDialog = ({trigger}) => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="wpm" stroke="#8884d8" />
+                    <Line type="monotone" dataKey="wpm" stroke={stroke} />
                 </LineChart>
             </ResponsiveContainer>
         );
     }
             
     return (
-        <Dialog onClose={handleClose} open={open} fullWidth maxWidth={'md'}>
-            <DialogTitle>History</DialogTitle>
-            <IconButton
-            aria-label="close"
-            onClick={handleClose}
-            sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-                color: (theme) => theme.palette.grey[500],
-            }}
-            >
-            <CloseIcon />
-            </IconButton>
-            <DialogContent dividers className="dialog-content">
-                <div id="toolbar-options">
-                    <Box
-                    sx={{
-                        width: 150,
-                        maxWidth: '100%',
-                    }}
-                    >
-                        <FormControl fullWidth>
-                            <InputLabel>History Length</InputLabel>
-                            <Select
-                                labelId="simple-select-label"
-                                defaultValue={50}
-                                label="History Length"
-                                size="small"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                            >
-                            <MenuItem value={10}>10</MenuItem>
-                            <MenuItem value={25}>25</MenuItem>
-                            <MenuItem value={50}>50</MenuItem>
-                            {/* <MenuItem value={100}>100</MenuItem>
-                            <MenuItem value={250}>250</MenuItem>
-                            <MenuItem value={500}>500</MenuItem> */}
-                            <MenuItem value={10000}>All</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-                    <Box
-                    sx={{
-                        width: 150,
-                        maxWidth: '100%',
-                    }}
-                    >
-                        <FormControl fullWidth>
-                            <InputLabel>Category</InputLabel>
-                            <Select
-                                labelId="simple-select-label"
-                                defaultValue={"Science"}
-                                label="Category"
-                                size="small"
-                                value={type}
-                                onChange={(e) => setType(e.target.value)}
-                            >
-                            <MenuItem value={"All"}>All</MenuItem>
-                            <MenuItem value={"science"}>Science</MenuItem>
-                            <MenuItem value={"history"}>History</MenuItem>
-                            <MenuItem value={"sports"}>Sports</MenuItem>
-                            <MenuItem value={"fun facts"}>Fun Facts</MenuItem>
-                            <MenuItem value={"mythology"}>Mythology</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-
-                    <Box
-                    sx={{
-                        width: 150,
-                        maxWidth: '100%',
-                    }}
-                    >
-                    <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">Time</InputLabel>
-                        <Select
-                        defaultValue={1}
-                        label="Time"
-                        size="small"
-                        value={minutes}
-                        onChange={(e) => setMinutes(e.target.value)}
+        <ThemeProvider theme={muiTheme}>
+            <Dialog onClose={handleClose} open={open} fullWidth maxWidth={'md'}>
+                <DialogTitle>History</DialogTitle>
+                <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8,
+                    color: (theme) => theme.palette.grey[500],
+                }}
+                >
+                <CloseIcon />
+                </IconButton>
+                <DialogContent dividers className="dialog-content">
+                    <div id="toolbar-options">
+                        <Box
+                        sx={{
+                            width: 150,
+                            maxWidth: '100%',
+                        }}
                         >
-                        <MenuItem value={0.5}>30 Seconds</MenuItem>
-                        <MenuItem value={1}>1 Minute</MenuItem>
-                        <MenuItem value={2}>2 Minutes</MenuItem>
-                        <MenuItem value={3}>3 Minutes</MenuItem>
-                        <MenuItem value={5}>5 Minutes</MenuItem>
-                        </Select>
-                    </FormControl>
-                    </Box>
-                </div>
-                <div className="history-content">
-                    <div className="history-content-item first">
-                        <div className="name">WPM</div>
-                        <div className="value">{calculateMetric(amount, false, "wpm")}</div>
+                            <FormControl fullWidth>
+                                <InputLabel>History Length</InputLabel>
+                                <Select
+                                    labelId="simple-select-label"
+                                    defaultValue={50}
+                                    label="History Length"
+                                    size="small"
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                >
+                                <MenuItem value={10}>10</MenuItem>
+                                <MenuItem value={25}>25</MenuItem>
+                                <MenuItem value={50}>50</MenuItem>
+                                {/* <MenuItem value={100}>100</MenuItem>
+                                <MenuItem value={250}>250</MenuItem>
+                                <MenuItem value={500}>500</MenuItem> */}
+                                <MenuItem value={10000}>All</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+                        <Box
+                        sx={{
+                            width: 150,
+                            maxWidth: '100%',
+                        }}
+                        >
+                            <FormControl fullWidth>
+                                <InputLabel>Category</InputLabel>
+                                <Select
+                                    labelId="simple-select-label"
+                                    defaultValue={"Science"}
+                                    label="Category"
+                                    size="small"
+                                    value={type}
+                                    onChange={(e) => setType(e.target.value)}
+                                >
+                                <MenuItem value={"All"}>All</MenuItem>
+                                <MenuItem value={"science"}>Science</MenuItem>
+                                <MenuItem value={"history"}>History</MenuItem>
+                                <MenuItem value={"sports"}>Sports</MenuItem>
+                                <MenuItem value={"fun facts"}>Fun Facts</MenuItem>
+                                <MenuItem value={"mythology"}>Mythology</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+
+                        <Box
+                        sx={{
+                            width: 150,
+                            maxWidth: '100%',
+                        }}
+                        >
+                        <FormControl fullWidth>
+                            <InputLabel id="demo-simple-select-label">Time</InputLabel>
+                            <Select
+                            defaultValue={1}
+                            label="Time"
+                            size="small"
+                            value={minutes}
+                            onChange={(e) => setMinutes(e.target.value)}
+                            >
+                            <MenuItem value={0.5}>30 Seconds</MenuItem>
+                            <MenuItem value={1}>1 Minute</MenuItem>
+                            <MenuItem value={2}>2 Minutes</MenuItem>
+                            <MenuItem value={3}>3 Minutes</MenuItem>
+                            <MenuItem value={5}>5 Minutes</MenuItem>
+                            </Select>
+                        </FormControl>
+                        </Box>
                     </div>
-                    <div className="history-content-item">
-                        <div className="name">Accuracy</div>
-                        <div className="value">{calculateMetric(amount, false, "accuracy")}%</div>
+                    <div className="history-content">
+                        <div className={`history-content-item first ${theme}`}>
+                            <div className="name">WPM</div>
+                            <div className="value">{calculateMetric(amount, false, "wpm")}</div>
+                        </div>
+                        <div className={`history-content-item ${theme}`}>
+                            <div className="name">Accuracy</div>
+                            <div className="value">{calculateMetric(amount, false, "accuracy")}%</div>
+                        </div>
+                        <div className={`history-content-item ${theme}`}>
+                            <div className="name">Corrected Acc.</div>
+                            <div className="value">{calculateMetric(amount, false, "correctedAccuracy")}%</div>
+                        </div>
                     </div>
-                    <div className="history-content-item">
-                        <div className="name">Corrected Acc.</div>
-                        <div className="value">{calculateMetric(amount, false, "correctedAccuracy")}%</div>
+                    <div className="graph">
+                        {renderResults(results)}
                     </div>
-                </div>
-                <div className="graph">
-                    {renderResults(results)}
-                </div>
-            </DialogContent>
-        </Dialog>
+                </DialogContent>
+            </Dialog>
+        </ThemeProvider>
     );
 }
 

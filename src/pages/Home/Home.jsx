@@ -14,14 +14,26 @@ import Results from '../../components/Results/Results';
 import CircularProgress from '@mui/material/CircularProgress';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HistoryDialog from '../../components/History/HistoryDialog';
-
+import { useContext } from 'react';
+import { ThemeContext } from '../../App';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const Home = () => {
+    const { theme } = useContext(ThemeContext);
+    console.log(theme);
+
     const [results, setResults] = useState({}); //[timeElapsed, characters, typos, notCorrectedTypos]
     const [type, setType] = useState('All');
     const [minutes, setMinutes] = useState(1);
     const [typingAreaKey, setTypingAreaKey] = useState(0);
     const [newResultsTrigger, setNewResultsTrigger] = useState(0);
+
+    // set mui components to theme using miu theme provider
+    const muiTheme = createTheme({
+        palette: {
+            mode: theme,
+        },
+      });
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
         queryKey: ['fetchPassages', { category: type, amount: minutes * 6 }],
@@ -104,72 +116,76 @@ const Home = () => {
         <div className="home">
             <Navbar />
             <div className='main home'>
-                <div id='toolbar'>
-                <div id="toolbar-options">
-                    <Box
-                    sx={{
-                        width: 150,
-                        maxWidth: '100%',
-                    }}
-                    >
+                <ThemeProvider theme={muiTheme}>
+                    <div id='toolbar'>
+                    <div id="toolbar-options">
+                        
+                        <Box
+                        sx={{
+                            width: 150,
+                            maxWidth: '100%',
+                        }}
+                        >
+                            <FormControl fullWidth>
+                                <InputLabel>Category</InputLabel>
+                                <Select
+                                    labelId="simple-select-label"
+                                    defaultValue={"Science"}
+                                    label="Category"
+                                    size="small"
+                                    value={type}
+                                    onChange={(e) => setType(e.target.value)}
+                                >
+                                <MenuItem value={"All"}>All</MenuItem>
+                                <MenuItem value={"science"}>Science</MenuItem>
+                                <MenuItem value={"history"}>History</MenuItem>
+                                <MenuItem value={"sports"}>Sports</MenuItem>
+                                <MenuItem value={"fun facts"}>Fun Facts</MenuItem>
+                                <MenuItem value={"mythology"}>Mythology</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+
+                        <Box
+                        sx={{
+                            width: 150,
+                            maxWidth: '100%',
+                        }}
+                        >
                         <FormControl fullWidth>
-                            <InputLabel>Category</InputLabel>
+                            <InputLabel id="demo-simple-select-label">Time</InputLabel>
                             <Select
-                                labelId="simple-select-label"
-                                defaultValue={"Science"}
-                                label="Category"
-                                size="small"
-                                value={type}
-                                onChange={(e) => setType(e.target.value)}
+                            defaultValue={1}
+                            label="Time"
+                            size="small"
+                            value={minutes}
+                            onChange={(e) => setMinutes(e.target.value)}
                             >
-                            <MenuItem value={"All"}>All</MenuItem>
-                            <MenuItem value={"science"}>Science</MenuItem>
-                            <MenuItem value={"history"}>History</MenuItem>
-                            <MenuItem value={"sports"}>Sports</MenuItem>
-                            <MenuItem value={"fun facts"}>Fun Facts</MenuItem>
-                            <MenuItem value={"mythology"}>Mythology</MenuItem>
+                            <MenuItem value={0.5}>30 Seconds</MenuItem>
+                            <MenuItem value={1}>1 Minute</MenuItem>
+                            <MenuItem value={2}>2 Minutes</MenuItem>
+                            <MenuItem value={3}>3 Minutes</MenuItem>
+                            <MenuItem value={5}>5 Minutes</MenuItem>
                             </Select>
                         </FormControl>
-                    </Box>
-
-                    <Box
-                    sx={{
-                        width: 150,
-                        maxWidth: '100%',
-                    }}
+                        </Box>
+                    </div>
+                    <LoadingButton
+                        onClick={refreshText}
+                        variant="contained"
+                        size="large"
+                        // make background black or white depending on theme
+                        style={{
+                            borderRadius: 35,
+                            backgroundColor: theme === 'light' ? '#000000' : '#ffffff',
+                            padding: "8px 6px",
+                            fontSize: "18px",
+                        }}
                     >
-                    <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">Time</InputLabel>
-                        <Select
-                        defaultValue={1}
-                        label="Time"
-                        size="small"
-                        value={minutes}
-                        onChange={(e) => setMinutes(e.target.value)}
-                        >
-                        <MenuItem value={0.5}>30 Seconds</MenuItem>
-                        <MenuItem value={1}>1 Minute</MenuItem>
-                        <MenuItem value={2}>2 Minutes</MenuItem>
-                        <MenuItem value={3}>3 Minutes</MenuItem>
-                        <MenuItem value={5}>5 Minutes</MenuItem>
-                        </Select>
-                    </FormControl>
-                    </Box>
-                </div>
-                <LoadingButton
-                    onClick={refreshText}
-                    variant="contained"
-                    size="large"
-                    style={{
-                        borderRadius: 35,
-                        backgroundColor: "black",
-                        padding: "8px 6px",
-                        fontSize: "18px",
-                    }}
-                >
-                    <RefreshIcon />
-                </LoadingButton>
-                </div>
+                        <RefreshIcon />
+                    </LoadingButton>
+                    </div>
+                </ThemeProvider>
                 
                 {isLoading || isFetching ? (
                     <div className='loading-container'>

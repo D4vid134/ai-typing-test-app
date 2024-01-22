@@ -8,39 +8,49 @@ import Signup from './pages/Signup/Signup'
 import Home from './pages/Home/Home'
 import Custom from './pages/Custom/Custom'
 import About from './pages/About/About'
+import { createContext } from 'react'
 
+export const ThemeContext = createContext(null);
 
 function App() {
+  const [theme, setTheme] = useState('dark');
+
+  const toggleTheme = () => {
+    setTheme(currentTheme => currentTheme === 'light' ? 'dark' : 'light');
+  }
+
   return (
-    <div className="App">
-      <ToastContainer />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/">
-            <Route path="login" element={<Login />} />
-            <Route path="signup" element={<Signup />} />
-            <Route
-              index
-              element={
-                <Home />
-              }
-            />
-            <Route
-              path="custom"
-              element={
-                <Custom />
-              }
-            />
-            <Route
-              path="about"
-              element={
-                <About />
-              }
-            />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <div className="App" id={theme}>
+        <ToastContainer />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/">
+              <Route path="login" element={<Login />} />
+              <Route path="signup" element={<Signup />} />
+              <Route
+                index
+                element={
+                  <Home />
+                }
+              />
+              <Route
+                path="custom"
+                element={
+                  <Custom />
+                }
+              />
+              <Route
+                path="about"
+                element={
+                  <About />
+                }
+              />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </ThemeContext.Provider>
   );
 }
 
