@@ -40,6 +40,8 @@ const Navbar = () => {
             Logout
           </div>
         )} */}
+        <Link className="menu-item" to="/">Home</Link>
+        <Link className="menu-item" to="/about">About</Link>
         {/* Add more links as needed */}
       </div>
     </nav>

@@ -73,6 +73,12 @@
         }
     }
 
+    @media screen and (max-width: 480px) {
+        #quick-actions {
+            visibility: hidden;
+        }
+    }
+
     .loading-container {
         display: flex;
         align-items: center;

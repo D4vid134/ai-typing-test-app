@@ -7,6 +7,7 @@ import Login from './pages/Login/Login'
 import Signup from './pages/Signup/Signup'
 import Home from './pages/Home/Home'
 import Custom from './pages/Custom/Custom'
+import About from './pages/About/About'
 
 
 function App() {
@@ -28,6 +29,12 @@ function App() {
               path="custom"
               element={
                 <Custom />
+              }
+            />
+            <Route
+              path="about"
+              element={
+                <About />
               }
             />
           </Route>

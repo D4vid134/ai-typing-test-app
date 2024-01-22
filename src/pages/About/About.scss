@@ -1,0 +1,19 @@
+.about-content {
+    width: 80%;
+    max-width: 1100px;
+    margin: auto;
+    background-color: white;
+    border-radius: 10px;
+    height: fit-content;
+    position: absolute;
+    padding: 0px 50px;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    //make noticeable box shadow
+    box-shadow: 0px 0px 6px rgba(148, 148, 148, 0.5);
+
+    .refresh-button {
+        background-color: black;
+    }
+}
