@@ -155,7 +155,7 @@ const generateNewPassage = async (subsection) => {
   // pick a random adjective between lesser known, interesting, famous, funny and informative
   const adjectives = ["lesser known", "interesting", "famous", "funny", "informative", "weird", "less known", "Start with a question, ", "obscure"];
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-
+  console.log(adjective);
   const completion = await openai.chat.completions.create({
     messages: [{"role": "system", "content": `you are generating text for a typing test. You speak plainly. 
     The category is ${adjective} ${subsection}. generate a ${wordCount} word interesting thing to type about. Make sure its INTERESTING. Like a fun fact, cool person/event, or funny.
