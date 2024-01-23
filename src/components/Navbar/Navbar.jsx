@@ -34,7 +34,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/">Fresh Type</Link>
+        <Link className="title" to="/">Fresh Type</Link>
       </div>
       <div className="navbar-menu">
         {/* {!currentUser ? (

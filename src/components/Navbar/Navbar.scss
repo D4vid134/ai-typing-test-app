@@ -19,6 +19,12 @@
         color: var(--primary-color);
         text-decoration: none;
       }
+
+      .title {
+        &:hover {
+          color: var(--border-color);
+        }
+      }
     }
   
     .navbar-menu {
@@ -26,6 +32,10 @@
 
       .dark-mode-toggle {
         cursor: pointer;
+
+        &:hover {
+          color: var(--border-color);
+        }
       }
 
       .menu-item {

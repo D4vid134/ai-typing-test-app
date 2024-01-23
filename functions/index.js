@@ -153,13 +153,13 @@ const generateNewPassage = async (subsection) => {
   const wordCount = Math.floor(Math.random() * (130 - 70 + 1) + 70);
 
   // pick a random adjective between lesser known, interesting, famous, funny and informative
-  const adjectives = ["lesser known", "interesting", "famous", "funny", "informative", "weird", "less known", "Start with a question, ", "obscure"];
+  const adjectives = ["lesser known", "interesting", "famous", "funny", "informative", "weird", "less known", "Start with a question, but dont use 'Did you know'", "obscure"];
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
   console.log(adjective);
   const completion = await openai.chat.completions.create({
     messages: [{"role": "system", "content": `you are generating text for a typing test. You speak plainly. 
     The category is ${adjective} ${subsection}. generate a ${wordCount} word interesting thing to type about. Make sure its INTERESTING. Like a fun fact, cool person/event, or funny.
-    dont use headers or line spacing or restate the question. 
+    dont use headers or line spacing. 
     just the text in one big paragraph.`}],
     model: "gpt-3.5-turbo-1106",
   });
