@@ -1,12 +1,11 @@
 # Fresh Type
 Link to live site - https://ai-typing-test.web.app/
 
-This project was made build on my frontend development skills in React and mess with the openAI API. I also wanted to build this because a few years ago (around 2021) I tried a lot of typing test websites and none of them was satisfying to me. Most sites would either have interesting passages but never update it so I would quickly memorize them, or they would have random combination of words. 
-I wanted to type full passages about interesting topics but also avoid typing the same things over and over.
-
-Introduction:
-
 Fresh Type is a typing website that offers a unique and interesting typing experience with a minimalistic design.
+
+Introduction: 
+This project was made to test and build on my frontend development skills in React and mess with the openAI API. I also wanted to build this because a few years ago (around 2021) I tried a lot of typing test websites and none of them was satisfying to me. Most sites would either have interesting passages but never update it so I would quickly memorize them, or they would have random combination of words. 
+I wanted to type full passages about interesting topics but also avoid typing the same things over and over.
 
 Key Features:
 
