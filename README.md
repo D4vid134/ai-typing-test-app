@@ -1,22 +1,25 @@
 # Fresh Type
-Link to live site - https://ai-typing-test.web.app/
 
-Fresh Type is a typing website that offers a unique and interesting typing experience with a minimalistic design.
+Link to live site: **[Link](https://ai-typing-test.web.app/)** 
 
-Introduction: 
-This project was made to test and build on my frontend development skills in React and mess with the openAI API. I also wanted to build this because a few years ago (around 2021) I tried a lot of typing test websites and none of them was satisfying to me. Most sites would either have interesting passages but never update it so I would quickly memorize them, or they would have random combination of words. 
-I wanted to type full passages about interesting topics but also avoid typing the same things over and over.
+**Fresh Type** is a typing website that offers a unique and engaging typing experience with a minimalistic design.
 
-Key Features:
+## Introduction
 
-Category Select: Select a category that you want to type about.
-Time limit: Choose a time limit for your typing test.
-Typing History: View your typing stats over the history of your usage of the site.
-Dark Mode: Switch between ligth and dark mode.
-Interactive Interface: A blend of smooth design and JavaScript/CSS interactions to enhance user experience.
-Technologies Used:
+Fresh Type was developed to test and enhance my frontend development skills using React, and to experiment with the OpenAI API. This project was inspired by my experiences in 2021 with various typing test websites, which either had static, unchanging passages that I would quickly memorize or random word combinations that are uninteresting to type. I wanted to type more interesting passages and avoid repetition. Fresh Type aims to provide just this.
 
-Backend: Firebase Functions and Firestore
-API Integration: OpenAI
-Database: Firestore
-Frontend: React, JavaScript, Material UI
+## Key Features
+
+- **Category Select:** Choose a category for your typing test.
+- **Autogenerate Passages Daily:** Passages from each Category will be replaced every day with new ones generated with AI
+- **Time Limit:** Set a time limit for your test.
+- **Typing History:** Track your typing performance over time.
+- **Dark Mode:** Toggle between light and dark themes.
+- **Interactive Interface:** A blend of smooth design and JavaScript/CSS interactions to enhance user experience.
+
+## Technologies Used
+
+- **Backend:** Firebase Functions and Firestore.
+- **API Integration:** OpenAI
+- **Database:** Firestore
+- **Frontend:** React, JavaScript, and Material UI
