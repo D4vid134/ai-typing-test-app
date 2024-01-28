@@ -12,6 +12,8 @@ import IconButton from '@mui/material/IconButton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ThemeContext } from "../../App";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Toggle from 'react-toggle';
+import "react-toggle/style.css";
 
 
 const HistoryDialog = ({trigger}) => {
@@ -23,6 +25,7 @@ const HistoryDialog = ({trigger}) => {
     const [minutes, setMinutes] = useState(1);
     const [results, setResults] = useState([]);
     const [amount, setAmount] = useState(10000);
+    const [excludeOutliers, setExcludeOutliers] = useState(false);
 
     // set mui components to theme using miu theme provider
     const muiTheme = createTheme({
@@ -40,7 +43,7 @@ const HistoryDialog = ({trigger}) => {
         const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {}
         const storageResults = storageResultsForMinute[type] || [];
         setResults(storageResults);
-    }, [amount, minutes, type, trigger]);
+    }, [amount, minutes, type, trigger, excludeOutliers]);
 
 
     const filterOutliers = (numArr) => {
@@ -53,31 +56,42 @@ const HistoryDialog = ({trigger}) => {
         const iqr = q3 - q1;
         const maxValue = q3 + iqr * 1.5;
         const minValue = q1 - iqr * 1.5;
-        return values.filter((x) => x >= minValue && x <= maxValue);
+        return values.filter((x) => x >= minValue && x <= maxValue && x >= 4);
+    }
+
+    const excludeOutliersHandler = () => {
+        setExcludeOutliers(!excludeOutliers);
     }
 
     const calculateMetric = (amount, excludeOutlier, metric) => {
-        let totalMetric = 0;
         let metricArr = [];
-        let total = 0;
-        let count = 0;
+        let totalMetric = 0;
     
-        // loop should start from latest
-        for (let i = results.length - 1; i >= 0; i--) {
-            if (count === amount) {
-                break;
-            }
-            let currentMetricValue = results[i][metric];
-            total += currentMetricValue;
-            count++;
-            metricArr.push(currentMetricValue);
+        // Initial collection of metric values
+        for (let i = results.length - 1; i >= 0 && metricArr.length < amount; i--) {
+            metricArr.push(results[i][metric]);
         }
     
+        // Filtering outliers if required
         if (excludeOutlier) {
             metricArr = filterOutliers(metricArr);
+    
+            // Add more values if needed, and check if there are enough results
+            let i = 1;
+            while (metricArr.length < amount && results.length - (amount + i) > 0) {
+                metricArr = [results[results.length -(amount + i)][metric], ...metricArr];
+                i++;
+
+                if (metricArr.length == amount) {
+                    metricArr = filterOutliers(metricArr);
+                }
+
+            }
         }
     
+        // Calculating the average
         if (metricArr.length > 0) {
+            const total = metricArr.reduce((acc, val) => acc + val, 0);
             totalMetric = Math.floor(total / metricArr.length);
         }
     
@@ -100,10 +114,34 @@ const HistoryDialog = ({trigger}) => {
         setOpen(false);
     };
 
-    const renderResults = (results) => {
-        results = results.slice(-amount);
+    const renderGraph = (results) => {
+        let filteredData = results.slice(-amount);
 
-        const data = results.map((result) => {
+        if (excludeOutliers) {
+            let wpmValues = filteredData.map(obj => obj.wpm);
+            let filteredWpmValues = filterOutliers(wpmValues);
+
+            filteredData = results.filter(obj => filteredWpmValues.includes(obj.wpm));
+        }
+
+        let i = 1;
+        while (filteredData.length < amount) {
+
+            if (results.length - (amount + i) <= 0) {
+                break;
+            }
+            filteredData = [results[results.length -(amount + i)], ...filteredData];
+            i++;
+
+            if (filteredData.length == amount) {
+                console.log(filteredData);
+                let wpmValues = filteredData.map(obj => obj.wpm);
+                let filteredWpmValues = filterOutliers(wpmValues);
+                filteredData = results.filter(obj => filteredWpmValues.includes(obj.wpm));
+            }
+        }
+
+        const data = filteredData.map((result) => {
             const date = new Date(result.date);
 
             const year = date.getFullYear().toString().slice(-2);
@@ -239,19 +277,31 @@ const HistoryDialog = ({trigger}) => {
                     <div className="history-content">
                         <div className={`history-content-item first ${theme}`}>
                             <div className="name">WPM</div>
-                            <div className="value">{calculateMetric(amount, false, "wpm")}</div>
+                            <div className="value">{calculateMetric(amount, excludeOutliers, "wpm")}</div>
                         </div>
                         <div className={`history-content-item ${theme}`}>
                             <div className="name">Accuracy</div>
-                            <div className="value">{calculateMetric(amount, false, "accuracy")}%</div>
+                            <div className="value">{calculateMetric(amount, excludeOutliers, "accuracy")}%</div>
                         </div>
                         <div className={`history-content-item ${theme}`}>
                             <div className="name">Corrected Acc.</div>
-                            <div className="value">{calculateMetric(amount, false, "correctedAccuracy")}%</div>
+                            <div className="value">{calculateMetric(amount, excludeOutliers, "correctedAccuracy")}%</div>
+                        </div>
+                    </div>
+                    <div style={{textAlign: "center"}}>
+                        <label htmlFor="outliers">Exclude Outliers</label>
+                        <div>
+                        <Toggle
+                            checked={!!excludeOutliers}
+                            icons={false}
+                            name="outliers"
+                            onChange={excludeOutliersHandler}
+                            title="Exclude Outliers"
+                        />
                         </div>
                     </div>
                     <div className="graph">
-                        {renderResults(results)}
+                        {renderGraph(results)}
                     </div>
                 </DialogContent>
             </Dialog>

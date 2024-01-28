@@ -10,20 +10,14 @@ const About = () => {
             <div className="about-content">
                 <h1>About</h1>
                 <p>
-                    Fresh Type is a typing test application that uses AI to generate new passages everyday for users to practice their typing skills.
+                    Fresh Type offers a unique solution to the repetitive nature of online typing tests. In my past experience of using typing tests online,
+                    I found that many websites only had a limited number of passages to practice with. I would quickly memorize the passages and it would boost my typing speed artificially.
+                    Other websites would have random words that solves this, but this is very boring to me and I would rather type full sentences with meaning.
+
+                    This app aims to solve this by using AI to generate new and interesting passages daily, keeping practice fresh and engaging. With Fresh Type, 
+                    improve your typing skills in a fun and effective way, with new material to explore every day.
                 </p>
 
-                <p>
-                    Background: During the pandemic, I had tried to improve my typing skills by using typing tests online. 
-                    However, I found that many websites only had a limited number of passages to practice with. 
-                    I would quickly memorize the passages and it would boost my typing speed artificially. Other websites would have random words that solves this, 
-                    but this is very boring to me and I would rather type full sentences with meaning.
-                </p>
-
-                <p>
-                    To solve this issue, I created a typing test application that would generate interesting new passages everyday for users to practice with.
-                    There is a long list of passages and several would be replaced everyday. After a month nearly all the passages would be changed.
-                </p>
             </div>
         </div>
     );

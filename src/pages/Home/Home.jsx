@@ -72,9 +72,9 @@ const Home = () => {
             typedCount: typedCount,
         };
         refreshText();
-        setNewResultsTrigger(prevTrigger => prevTrigger + 1);
         if (results.timeElapsed !== 0) {
             setResults(results);
+            setNewResultsTrigger(prevTrigger => prevTrigger + 1);
         }
 
     };
