@@ -134,7 +134,6 @@ const HistoryDialog = ({trigger}) => {
             i++;
 
             if (filteredData.length == amount) {
-                console.log(filteredData);
                 let wpmValues = filteredData.map(obj => obj.wpm);
                 let filteredWpmValues = filterOutliers(wpmValues);
                 filteredData = results.filter(obj => filteredWpmValues.includes(obj.wpm));
@@ -297,6 +296,7 @@ const HistoryDialog = ({trigger}) => {
                             name="outliers"
                             onChange={excludeOutliersHandler}
                             title="Exclude Outliers"
+                            className={theme === "dark" ? "dark" : "light"}
                         />
                         </div>
                     </div>

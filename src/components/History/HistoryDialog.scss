@@ -52,3 +52,18 @@
     }
     
 }
+.react-toggle.react-toggle--checked.dark .react-toggle-track {
+    background-color: #98cdff !important;
+}
+
+.react-toggle.react-toggle--checked.dark .react-toggle-thumb {
+    border-color: #98cdff !important;
+}
+
+.react-toggle.react-toggle--checked.light .react-toggle-track {
+    background-color: #2315db !important;
+}
+
+.react-toggle.react-toggle--checked.light .react-toggle-thumb {
+    border-color: #2315db !important;
+}
