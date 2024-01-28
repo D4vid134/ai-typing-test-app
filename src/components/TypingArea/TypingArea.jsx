@@ -12,14 +12,14 @@ const Character = memo(({ char, status }) => {
 Character.displayName = 'Character';
 
 const TypingText = ({ passages, userInput, isFocused }) => {
-        // Define the block size
+        // separate the text into blocks so that the virtualized list can render it efficiently
         const blocks = useMemo(() => {
             let cumulativeLength = 0;
             const resultBlocks = [];
     
             for (let i = 0; i < passages.length; i++) {
                 resultBlocks.push({ text: passages[i], startIndex: cumulativeLength });
-                cumulativeLength += passages[i].length; // Update cumulativeLength after pushing the block
+                cumulativeLength += passages[i].length;
             }
     
             return resultBlocks;
@@ -70,7 +70,6 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
     const keysPressed = useRef({});
     const [lastInputIsTypo, setLastInputIsTypo] = useState(false);
     const noTimer = seconds === -1;
-    // const [count, setCount] = useState(0);
 
     useEffect(() => {
         if (isRunning) {
@@ -99,11 +98,11 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
             const { key } = event;
             if (key === 'Enter' || key === 'Tab' ) {
                 event.preventDefault();
-                // register it as a space input 
             }
             keysPressed.current[key] = true;
             if (keysPressed.current['Enter'] && keysPressed.current['Tab']) {
                 event.preventDefault();
+                // show results causes a reset. Sending 0s will make sure the results arent saved
                 showResults(0, 0, 0, 0, 0);
             }
         }
@@ -243,7 +242,6 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
         if (!isRunning) {
             setIsRunning(true);
         }
-        // const currentCharRect = typingAreaRef.current.children[0].children[userInput.length].getBoundingClientRect();
         let input = e.target.value;
         
         if (e.nativeEvent.key === 'Enter') {

@@ -159,24 +159,32 @@ const generateNewPassage = async (subsection) => {
   const usesQuestion = Math.random() < 0.25;
   const useQuestionString = usesQuestion ? "Use a question in the passage." : "Do not ask a question in the passage.";
 
-  const useQuote = Math.random() < 0.05;
+  const useQuote = Math.random() < 0.02;
   const useQuoteString = useQuote ? "Use a quote in the passage." : "";
 
-  const useGeneric = Math.random() < 0.05;
-  const useGenericString = useGeneric ? "" : "Dont use 'Did you know' or 'In the realm of' type phrases.";
+  const useGeneric = Math.random() < 0.75;
+  const useGenericString = useGeneric ? "Dont use 'Did you know' or 'In the realm of' type phrases." : "";
 
-  const useSubsection = Math.random() < 0.90;
-  const useSubsectionString = useSubsection ? `` : `Even though the topic is about it. Dont use the word ${subsection}.`;
+  const useSubsection = Math.random() < 0.10;
+  const useSubsectionString = useSubsection ? `Even though the topic is about it. Dont use the word ${subsection}.` : ``;
+
+  const useDuring = Math.random() < 0.40;
+  const useDuringString = useDuring ? "Dont start the passage with 'During'." : "";
+
+  const useIn = Math.random() < 0.40;
+  const useInString = useIn ? "Dont start the passage with 'In'." : "";
 
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-  console.log(adjective);
   const completion = await openai.chat.completions.create({
     messages: [{"role": "system", "content": `You are generating text for a typing test. You speak plainly. 
     The category is ${adjective} ${subsection}. ${useQuestionString} ${useQuoteString} ${useGenericString} Generate a ${wordCount} word interesting thing to type about. Make sure its INTERESTING. Like a fun fact, cool person/event, or funny.
-    ${useSubsectionString} Dont use headers or line spacing. 
+    ${useSubsectionString} ${useDuringString} ${useInString} Dont use headers or line spacing. 
     Just the text in one big paragraph.`}],
     model: "gpt-3.5-turbo-1106",
   });
+  console.log(adjective);
+  console.log(subsection);
+  console.log(completion.choices[0].message.content);
 
   return completion.choices[0].message.content;
 }
@@ -197,7 +205,6 @@ exports.updateNewPassage = onSchedule("every day 00:00", async (context) => {
       i--;
       continue;
     }
-    console.log(subsection);
 
     const passage = await generateNewPassage(subsection);
 
