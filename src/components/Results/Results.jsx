@@ -73,7 +73,6 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typ
     const averageOfPast5 = () => {
         let sum = 0;
         let count = 0;
-        console.log(results);
         for (let i = results.length - 1; i >= 0 && count < 5; i--) {
             sum += results[i].wpm;
             count++;

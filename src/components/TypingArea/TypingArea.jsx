@@ -173,8 +173,6 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
     const countCorrectAndIncorrect = (userText, text) => {
         let correctCount = 0;
         let incorrectCount = 0;
-        console.log(userText);
-        console.log(text);
         // Count correct and incorrect characters
         for (let i = 0; i < text.length; i++) {
             if (userText[i] === text[i]) {

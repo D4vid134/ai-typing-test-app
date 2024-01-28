@@ -14,7 +14,7 @@ const About = () => {
                 </p>
 
                 <p>
-                    During the pandemic, I had tried to improve my typing skills by using typing tests online. 
+                    Background: During the pandemic, I had tried to improve my typing skills by using typing tests online. 
                     However, I found that many websites only had a limited number of passages to practice with. 
                     I would quickly memorize the passages and it would boost my typing speed artificially. Other websites would have random words that solves this, 
                     but this is very boring to me and I would rather type full sentences with meaning.

@@ -20,7 +20,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const Home = () => {
     const { theme } = useContext(ThemeContext);
-    console.log(theme);
 
     const [results, setResults] = useState({}); //[timeElapsed, characters, typos, notCorrectedTypos]
     const [type, setType] = useState('All');
@@ -45,6 +44,11 @@ const Home = () => {
                 category: category,
                 amount: amount,
             });
+
+            // const response1 = await axios.post(`${firebaseFunctionsKey}/sendPasswordResetEmail`, {
+            //     email: "davidqiu29@icloud.com",
+            // });
+            // console.log(response1);
             return response.data.passages;
         },
         refetchOnWindowFocus: false,
@@ -69,7 +73,6 @@ const Home = () => {
         };
         refreshText();
         setNewResultsTrigger(prevTrigger => prevTrigger + 1);
-        console.log(newResultsTrigger);
         if (results.timeElapsed !== 0) {
             setResults(results);
         }

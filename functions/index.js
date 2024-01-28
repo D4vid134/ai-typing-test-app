@@ -152,15 +152,29 @@ const generateNewPassage = async (subsection) => {
   // pick a number between 70 and 130
   const wordCount = Math.floor(Math.random() * (130 - 70 + 1) + 70);
 
-  // pick a random adjective between lesser known, interesting, famous, funny and informative
-  const adjectives = ["lesser known", "interesting", "famous", "funny", "informative", "weird", "less known", "Start with a question, but dont use 'Did you know'", "obscure"];
+  // pick a random adjective
+  const adjectives = ["lesser known", "interesting", "famous", "funny", "informative", "weird", "less known", "obscure", "modern", "old"];
+
+  // some patterns that the ai uses often so we want to avoid them
+  const usesQuestion = Math.random() < 0.25;
+  const useQuestionString = usesQuestion ? "Use a question in the passage." : "Do not ask a question in the passage.";
+
+  const useQuote = Math.random() < 0.05;
+  const useQuoteString = useQuote ? "Use a quote in the passage." : "";
+
+  const useGeneric = Math.random() < 0.05;
+  const useGenericString = useGeneric ? "" : "Dont use 'Did you know' or 'In the realm of' type phrases.";
+
+  const useSubsection = Math.random() < 0.90;
+  const useSubsectionString = useSubsection ? `` : `Even though the topic is about it. Dont use the word ${subsection}.`;
+
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
   console.log(adjective);
   const completion = await openai.chat.completions.create({
-    messages: [{"role": "system", "content": `you are generating text for a typing test. You speak plainly. 
-    The category is ${adjective} ${subsection}. generate a ${wordCount} word interesting thing to type about. Make sure its INTERESTING. Like a fun fact, cool person/event, or funny.
-    dont use headers or line spacing. 
-    just the text in one big paragraph.`}],
+    messages: [{"role": "system", "content": `You are generating text for a typing test. You speak plainly. 
+    The category is ${adjective} ${subsection}. ${useQuestionString} ${useQuoteString} ${useGenericString} Generate a ${wordCount} word interesting thing to type about. Make sure its INTERESTING. Like a fun fact, cool person/event, or funny.
+    ${useSubsectionString} Dont use headers or line spacing. 
+    Just the text in one big paragraph.`}],
     model: "gpt-3.5-turbo-1106",
   });
 
@@ -192,6 +206,45 @@ exports.updateNewPassage = onSchedule("every day 00:00", async (context) => {
     });
   }
 });
+
+  // firebase function to send password reset email
+  exports.sendPasswordResetEmail = functions.https.onRequest(async (req, res) => {
+    cors(req, res, async () => {
+      let body = req.body;
+      
+      if (!body || !body.email) {
+        return res.status(400).send({
+          error: "Fields email is required.",
+        });
+      }
+  
+      try {
+        const email = body.email;
+        const user = await admin.auth().getUserByEmail(email);
+        console.log(user);
+        if (!user) {
+          return res.status(400).send({
+            error: "No user found with that email.",
+          });
+        }
+
+        const actionCodeSettings = {
+          url: "https://ai-typing-test.web.app/",
+          handleCodeInApp: true,
+        };
+        const link = await admin.auth().generatePasswordResetLink(email, actionCodeSettings);
+        console.log(link);
+        return res.status(200).send({
+          message: "Email successfully sent.",
+        });
+      } catch (err) {
+        console.log(err);
+        return res.status(500).send({
+          error: `Error: Send mail to ${body.email} failed: ${err.message}`,
+        });
+      }
+    });
+  });
 
 
 

@@ -34,12 +34,12 @@ function App() {
                   <Home />
                 }
               />
-              <Route
-                path="custom"
+              {/* <Route
+                path="contact"
                 element={
-                  <Custom />
+                  <Contact />
                 }
-              />
+              /> */}
               <Route
                 path="about"
                 element={

@@ -40,7 +40,6 @@ const HistoryDialog = ({trigger}) => {
         const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {}
         const storageResults = storageResultsForMinute[type] || [];
         setResults(storageResults);
-        console.log(amount)
     }, [amount, minutes, type, trigger]);
 
 

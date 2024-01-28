@@ -15,6 +15,12 @@
     
     .navbar-brand {
       font-size: 2rem;
+
+      // make font size smaller when screen size is smaller
+      @media screen and (max-width: 500px) {
+        font-size: 1.675rem;
+      }
+
       a {
         color: var(--primary-color);
         text-decoration: none;
@@ -44,6 +50,10 @@
         margin-left: 1rem;
         cursor: pointer;
         font-size: 1.25rem;
+
+        @media screen and (max-width: 500px) {
+          margin-left: 0.675rem;
+        }
         
         &:hover {
           color: var(--border-color);

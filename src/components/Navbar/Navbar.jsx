@@ -17,7 +17,6 @@ const Navbar = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   useEffect(() => {
-    console.log(currentUser);
   }, [currentUser]);
 
   const handleLogout = () => {
