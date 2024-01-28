@@ -44,11 +44,7 @@ const Home = () => {
                 category: category,
                 amount: amount,
             });
-
-            // const response1 = await axios.post(`${firebaseFunctionsKey}/sendPasswordResetEmail`, {
-            //     email: "davidqiu29@icloud.com",
-            // });
-            // console.log(response1);
+            
             return response.data.passages;
         },
         refetchOnWindowFocus: false,
