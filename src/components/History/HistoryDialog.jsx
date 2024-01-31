@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import "./HistoryDialog.scss";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import { FormControl, InputLabel, MenuItem, Select, Box, Dialog, DialogTitle, DialogContent} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
@@ -14,8 +12,9 @@ import { ThemeContext } from "../../App";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
+
 
 
 const HistoryDialog = ({trigger}) => {
@@ -42,24 +41,23 @@ const HistoryDialog = ({trigger}) => {
         },
     });
 
-    const getFirestoreData = () => {
+    const subscribeToFirestoreData = () => {
         const userResultsRef = doc(db, "users", currentUser.uid, "results", minutes.toString());
-        getDoc(userResultsRef)
-            .then((docSnapshot) => {
-                if (docSnapshot.exists()) {
-                    const firestoreResults = docSnapshot.data()[type] || [];
-                    setResults(firestoreResults);
-                } else {
-                    // Handle the case where there is no such document
-                    setResults([]);
-                }
-            })
-            .catch((error) => {
-                console.error("Error fetching from Firestore: ", error);
-                setResults([]); // Setting results to empty in case of an error
-            });
+        
+        return onSnapshot(userResultsRef, (docSnapshot) => {
+            if (docSnapshot.exists()) {
+                const firestoreResults = docSnapshot.data()[type] || [];
+                setResults(firestoreResults);
+            } else {
+                // Handle the case where there is no such document
+                setResults([]);
+            }
+        }, (error) => {
+            console.error("Error fetching from Firestore: ", error);
+            setResults([]); // Setting results to empty in case of an error
+        });
     };
-    
+
     const getLocalStorageData = () => {
         const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {};
         const storageResults = storageResultsForMinute[type] || [];
@@ -68,7 +66,7 @@ const HistoryDialog = ({trigger}) => {
     
     useEffect(() => {
         if (currentUser) {
-            getFirestoreData();
+            const unsubscribe = subscribeToFirestoreData();
             console.log("Firestore data fetched");
         } else {
             getLocalStorageData();

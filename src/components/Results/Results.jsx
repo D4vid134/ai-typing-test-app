@@ -14,16 +14,18 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typ
 
     const { currentUser } = useContext(AuthContext);
 
-    const updateFirestoreResults = (result, minutes, type) => {
+    const updateFirestoreResults = async (result, minutes, type) => {
         const userResultsRef = doc(db, "users", currentUser.uid, "results", minutes);
-        getDoc(userResultsRef)
-            .then((docSnapshot) => {
+        await getDoc(userResultsRef)
+            .then(async (docSnapshot) => {
                 if (docSnapshot.exists()) {
                     const storageResults = docSnapshot.data()[type] || [];
                     storageResults.push(result);
-                    updateDoc(userResultsRef, { [type]: storageResults });
+                    await updateDoc(userResultsRef, { [type]: storageResults });
+                    console.log("Document updated with new result");
                 } else {
-                    setDoc(userResultsRef, { [type]: [result] });
+                    await setDoc(userResultsRef, { [type]: [result] });
+                    console.log("Document created with new result");
                 }
             })
             .catch((error) => {
