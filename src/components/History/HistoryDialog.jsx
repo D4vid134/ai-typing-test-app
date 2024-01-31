@@ -14,6 +14,8 @@ import { ThemeContext } from "../../App";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 
 const HistoryDialog = ({trigger}) => {
@@ -27,6 +29,8 @@ const HistoryDialog = ({trigger}) => {
     const [amount, setAmount] = useState(10000);
     const [excludeOutliers, setExcludeOutliers] = useState(false);
 
+    const { currentUser } = useContext(AuthContext);
+
     // set mui components to theme using miu theme provider
     const muiTheme = createTheme({
         palette: {
@@ -38,12 +42,39 @@ const HistoryDialog = ({trigger}) => {
         },
     });
 
-    useEffect(() => {
-        // console.log(currentUser);
-        const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {}
+    const getFirestoreData = () => {
+        const userResultsRef = doc(db, "users", currentUser.uid, "results", minutes.toString());
+        getDoc(userResultsRef)
+            .then((docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    const firestoreResults = docSnapshot.data()[type] || [];
+                    setResults(firestoreResults);
+                } else {
+                    // Handle the case where there is no such document
+                    setResults([]);
+                }
+            })
+            .catch((error) => {
+                console.error("Error fetching from Firestore: ", error);
+                setResults([]); // Setting results to empty in case of an error
+            });
+    };
+    
+    const getLocalStorageData = () => {
+        const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {};
         const storageResults = storageResultsForMinute[type] || [];
         setResults(storageResults);
-    }, [amount, minutes, type, trigger, excludeOutliers]);
+    };
+    
+    useEffect(() => {
+        if (currentUser) {
+            getFirestoreData();
+            console.log("Firestore data fetched");
+        } else {
+            getLocalStorageData();
+            console.log("Local storage data fetched");
+        }
+    }, [minutes, type, trigger, currentUser]);
 
 
     const filterOutliers = (numArr) => {

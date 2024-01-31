@@ -5,16 +5,23 @@ import { useNavigate } from "react-router-dom";
 import {AuthContext} from "../../context/AuthContext"
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
-
+import "./Login.scss";
+import { ThemeContext } from "../../App";
+import Navbar from "../../components/Navbar/Navbar";
 
 const Login = () => {
   const [error, setError] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { theme } = useContext(ThemeContext);
 
   const navigate = useNavigate()
 
   const {dispatch} = useContext(AuthContext)
+
+  const navigateToSignup = () => {
+    navigate('/signup');
+  }
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -47,21 +54,29 @@ const Login = () => {
   };
 
   return (
+
     <div className="login">
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-        {error && <span>{error.message}</span>}
-      </form>
+      <Navbar />
+      <div className="login main">
+        <h1>Login</h1>
+        <form onSubmit={handleLogin}>
+          {error && <span>{error.message}</span>}
+          <input
+            type="email"
+            placeholder="email"
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit">Login</button>
+          <p>
+            Don't have an account? <span className="link" onClick={navigateToSignup}>Signup</span>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

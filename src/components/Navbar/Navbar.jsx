@@ -23,6 +23,7 @@ const Navbar = () => {
     signOut(auth)
       .then(() => {
         console.log("User signed out");
+        localStorage.removeItem("user");
         dispatch({ type: "LOGOUT" }); // Dispatching logout action
       })
       .catch((error) => {
@@ -36,13 +37,6 @@ const Navbar = () => {
         <Link className="title" to="/">Fresh Type</Link>
       </div>
       <div className="navbar-menu">
-        {/* {!currentUser ? (
-          <Link className="menu-item" to="/login">Login</Link>
-        ) : (
-          <div className="menu-item" onClick={handleLogout}>
-            Logout
-          </div>
-        )} */}
         {theme === "dark" ? (
           <div className="dark-mode-toggle" onClick={toggleTheme}>
             <LightModeIcon />
@@ -54,6 +48,13 @@ const Navbar = () => {
         )}
         <Link className="menu-item" to="/">Home</Link>
         <Link className="menu-item" to="/about">About</Link>
+        {!currentUser ? (
+          <Link className="menu-item" to="/login">Login</Link>
+        ) : (
+          <div className="menu-item" onClick={handleLogout}>
+            Logout
+          </div>
+        )}
         {/* Add more links as needed */}
       </div>
     </nav>

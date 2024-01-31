@@ -6,12 +6,46 @@ import { AuthContext } from "../../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typedCount, type, trigger}) => {
     const [results, setResults] = useState([]);
 
+    const { currentUser } = useContext(AuthContext);
+
+    const updateFirestoreResults = (result, minutes, type) => {
+        const userResultsRef = doc(db, "users", currentUser.uid, "results", minutes);
+        getDoc(userResultsRef)
+            .then((docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    const storageResults = docSnapshot.data()[type] || [];
+                    storageResults.push(result);
+                    updateDoc(userResultsRef, { [type]: storageResults });
+                } else {
+                    setDoc(userResultsRef, { [type]: [result] });
+                }
+            })
+            .catch((error) => {
+                console.error("Error updating Firestore: ", error);
+            });
+    };
+    
+    const updateLocalStorageResults = (result, minutes, type) => {
+        const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {};
+        const storageResults = storageResultsForMinute[type] || [];
+    
+        if (storageResults.length >= 50) {
+            storageResults.shift();
+        }
+    
+        storageResults.push(result);
+        storageResultsForMinute[type] = storageResults;
+        localStorage.setItem("resultsFor" + minutes, JSON.stringify(storageResultsForMinute));
+        setResults(storageResults);
+    };
+    
     useEffect(() => {
-        // console.log(currentUser);
         if (timeElapsed > 0) {
             const minutes = (timeElapsed / 60).toString();
             const result = {
@@ -20,22 +54,15 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typ
                 correctedAccuracy: calculateCorrectedAccuracy(),
                 date: new Date().toISOString(),
             };
-
-            console.log(result);
-            // add result to user's results array in local storage
-            const storageResultsForMinute = JSON.parse(localStorage.getItem("resultsFor" + minutes)) || {};
-            const storageResults = storageResultsForMinute[type] || [];
-
-            if (storageResults.length >= 50) {
-                storageResults.shift();
+    
+            if (currentUser) { 
+                updateFirestoreResults(result, minutes, type);
+                updateLocalStorageResults(result, minutes, type);
+            } else {
+                updateLocalStorageResults(result, minutes, type);
             }
-
-            storageResults.push(result);
-            storageResultsForMinute[type] = storageResults;
-            localStorage.setItem("resultsFor" +  minutes, JSON.stringify(storageResultsForMinute));
-            setResults(storageResults);
         }
-    }, [timeElapsed, trigger]);
+    }, [timeElapsed, trigger, currentUser]);
 
     const calculateWpm = () => {
         // docks 5 characters for every typo 
@@ -106,7 +133,14 @@ const Results = ({ timeElapsed, correctCharacters, typos, notCorrectedTypos, typ
 
                     </div>
                 )}
+
+            {!currentUser && timeElapsed && (
+                <div id='login-prompt'>
+                    Log in to ensure all your results are saved
+                </div>
+            )}
             </div>
+
         </>
     );
 }

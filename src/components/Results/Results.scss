@@ -9,6 +9,15 @@
     }
 }
 
+@keyframes popInNoOpacity {
+    0% {
+        transform: scaleX(0);
+    }
+    100% {
+        transform: scaleX(1);
+    }
+}
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
@@ -59,4 +68,15 @@
         }
         
     }
+}
+
+#login-prompt {
+    display: flex;
+    margin-top: 5px;
+    width: 100%;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.6;
+    animation: popInNoOpacity 1s ease-in-out;
 }
