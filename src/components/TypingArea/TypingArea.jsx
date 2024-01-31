@@ -69,6 +69,8 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
     const [typedCount, setTypedCount] = useState(0);
     const keysPressed = useRef({});
     const [lastInputIsTypo, setLastInputIsTypo] = useState(false);
+    const [scrollQueue, setScrollQueue] = useState([]);
+    const [isScrolling, setIsScrolling] = useState(false);
     const noTimer = seconds === -1;
 
     useEffect(() => {
@@ -184,13 +186,35 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
         return { correctCount, incorrectCount };
     };
 
-    const scroll = (scrollValue) => {
-        const scrollDiv = document.getElementById('text');
-        if (scrollDiv) {
-            // Scrolls the div by the specified number of pixels
-            scrollDiv.scrollTop += scrollValue;
-        }
+    const queueScroll = (scrollValue) => {
+        setScrollQueue(prevQueue => [...prevQueue, scrollValue]);
     };
+
+    // delay the scroll to prevent it from scrolling too fast and overwriting the previous scroll
+    useEffect(() => {
+        if (scrollQueue.length > 0 && !isScrolling) {
+            setIsScrolling(true);
+            const scrollDiv = document.getElementById('text');
+            if (scrollDiv) {
+                const scrollValue = scrollQueue[0];
+                console.log(scrollDiv.scrollTop);
+
+                scrollDiv.scrollBy({
+                    top: scrollValue,
+                    left: 0,
+                    behavior: 'smooth'
+                });
+
+                // Estimate scroll duration (e.g., 250ms per 100px scroll)
+                const estimatedDuration = Math.abs(scrollValue / 100) * 250;
+
+                setTimeout(() => {
+                    setIsScrolling(false);
+                    setScrollQueue(prevQueue => prevQueue.slice(1));
+                }, estimatedDuration);
+            }
+        }
+    }, [scrollQueue, isScrolling]);
 
     const handleScrolling = (currentBlock, currentCharElement, inputType, currentBlockIndex) => {
         const scrollAmount = 48;
@@ -201,14 +225,14 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
                     let previousCharRect = currentCharElement.previousElementSibling.getBoundingClientRect();
                     
                     if (previousCharRect.bottom + 2 < currentCharRect.bottom) {
-                        scroll(-scrollAmount);
+                        queueScroll(-scrollAmount);
                     }
                 } else {
                     const previousBlock = typingAreaRef.current.children[0].children[0].lastElementChild.children[currentBlockIndex - 1].lastElementChild;
                     const previousCharElement = previousBlock.lastElementChild;
                     let previousCharRect = previousCharElement.getBoundingClientRect();
                     if (previousCharRect.bottom + 2 < currentCharRect.bottom) {
-                        scroll(-scrollAmount);
+                        queueScroll(-scrollAmount);
                     }
                 }
             } else {
@@ -216,7 +240,7 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
                     let nextCharRect = currentCharElement.nextElementSibling.getBoundingClientRect();
             
                     if (nextCharRect.bottom > currentCharRect.bottom) {
-                        scroll(scrollAmount);
+                        queueScroll(scrollAmount);
                     }
                 } else {
                     console.log('next block');
@@ -224,7 +248,7 @@ const TypingArea = ({ passages, seconds, showResults, text }) => {
                     const nextCharElement = nextBlock.firstElementChild;
                     let nextCharRect = nextCharElement.getBoundingClientRect();
                     if (nextCharRect.bottom > currentCharRect.bottom) {
-                        scroll(scrollAmount);
+                        queueScroll(scrollAmount);
                     }
                 }
             }
