@@ -59,7 +59,28 @@ const Signup = () => {
                 navigate("/");
             })
             .catch((error) => {
-                setError(error);
+                console.error("Firebase Error:", error); // Log the actual error for debugging
+        
+                let userFriendlyError;
+                switch (error.code) {
+                    case "auth/email-already-in-use":
+                        userFriendlyError = "This email address is already in use by another account.";
+                        break;
+                    case "auth/invalid-email":
+                        userFriendlyError = "The email address is invalid.";
+                        break;
+                    case "auth/operation-not-allowed":
+                        userFriendlyError = "Email/password accounts are not enabled.";
+                        break;
+                    case "auth/weak-password":
+                        userFriendlyError = "The password is too weak. It should be at least 6 characters long and include a mix of uppercase and lowercase letters, numbers, and symbols."
+                        break;
+                    default:
+                        userFriendlyError = "An unexpected error occurred during account creation. Please try again.";
+                        break;
+                }
+        
+                setError(new Error(userFriendlyError));
             });
     };
 
